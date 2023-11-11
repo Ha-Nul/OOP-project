@@ -27,6 +27,8 @@ private:
 	void Withdraw();
 	void Transfer();
 	void Cancle();
+	bool Allowed_cash(long long cash);
+	bool Allowed_check(long long check);
 public:
 	ATM(long long _language_type, long long _atm_type);
 	void Start_ATM();
@@ -40,6 +42,38 @@ ATM::ATM(long long  _language_type, long long  _atm_type)
 	admin_card_number{ atm_count + 100000 }
 {
 	atm_count++;
+}
+
+bool ATM::Allowed_cash(long long cash) {
+	bool result = cash % 50000 % 10000 % 5000 % 1000 == 0;
+	if (result == false) {
+		if (language == 1) {
+			cout << "The amount of cash is not allowed" << endl;
+			cout << "Only the following types of cashes are allowed" << endl;
+			cout << "KRW 1000, KRW 5000, KRW 10000, KRW 50000" << endl;
+		}
+		else {
+			cout << "허용되지 않은 현금의 금액입니다" << endl;
+			cout << "오직 다음과 같은 현금 종류만 허용됩니다" << endl;
+			cout << "1000 원, 5000 원, 10000 원, 50000 원" << endl;
+		}
+	}
+	return result;
+}
+
+bool ATM::Allowed_check(long long check) {
+	bool result = check >= 100000;
+	if (result == false) {
+		if (language == 1) {
+			cout << "The amount of check is not allowed" << endl;
+			cout << "Any amout over KRW 100000 check is allowed" << endl;
+		}
+		else {
+			cout << "허용되지 않은 수표의 금액입니다" << endl;
+			cout << "100000 원 이상의 수표만 허용됩니다" << endl;
+		}
+	}
+	return result;
 }
 
 void ATM::Start_ATM() {
@@ -136,10 +170,23 @@ void ATM::Start_ATM() {
 		/*============================ Transfer ============================*/
 		// if Cash transfer
 		if (transfer_type == 1) {
-
-			if (language == 1) {
-				cout << "Please enter the amount of cash that you want to pay" << endl;
+			long long pay;
+			while (1) {
+				if (language == 1) {
+					cout << "Please enter the amount of cash that you want to pay" << endl;
+				}
+				else {
+					cout << "지불하실 현금의 금액를 입력해주세요";
+				}
+				cin >> pay;
+				if (Allowed_cash(pay) == false) {
+					continue;
+				}
+				else {
+					break;
+				}
 			}
+
 		}
 		// if Account transfer
 		if (transfer_type == 2) {
