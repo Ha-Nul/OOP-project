@@ -1,5 +1,3 @@
-//Github Edited hehe
-
 #include <iostream>
 #include <string>
 
@@ -26,8 +24,8 @@ private:
 	void Admin();
 	void Deposit();
 	void Withdraw();
-	void Transfer(); //Transper_in_Bank Ȱ��
-	void Cancle();// ���� �߰� �߰��� cancle ������ cancle�� ������ ����ȴٴ� ���� �Բ� session�� �����.
+	void Transfer();
+	void Cancle();
 public:
 	ATM(long long _language_type, long long _atm_type);
 	void Start_ATM();
@@ -53,8 +51,6 @@ void ATM::Cancle(){
 
 }
 
-
-
 ATM::ATM(long long  _language_type, long long  _atm_type)
 	: serial_number{ atm_count + 100000 },
 	language_type{ _language_type },
@@ -63,24 +59,39 @@ ATM::ATM(long long  _language_type, long long  _atm_type)
 {
 	atm_count++;
 }
-void ATM::Start_ATM() {
-	// ī�� ��ȣ �ޱ�
-	long long _account_number;
-	cin >> _account_number;
 
+void ATM::Transfer() {
+	
+}
+
+void ATM::Start_ATM() {
+	/*=================== Enter the account number ===================*/
+	long long _account_number;
+	cout << "Please enter your card(account) number" << endl;
+	cin >> _account_number;
+	/*================================================================*/
+
+	/*==================== Select the Language ====================*/
+	long long language; // English = 1, Korean = 2
+	// if ATM is bilingual
 	if (language_type == 1) {
-		//��� ���� ����� �ٲٱ�
-		long long language;
+		cout << "Please select the language" << endl;
+		cout << "1. English" << endl;
+		cout << "2. 한국어" << endl;
 		cin >> language;
 	}
+	// if ATM is unilingual
+	else {
+		language = 1; // Default is English
+	}
+	/*=============================================================*/
 
 	if (_account_number == admin_card_number) {
 		Admin();
 		return;
 	}
 
-	while (1) {//����ڰ� cancle button��ư �����ų� exceptional situation�Ͼ�� ����
-		//�޴�â ����
+	while (1) {
 		long long var = Menu();
 
 		if (var == 1) {
@@ -93,10 +104,46 @@ void ATM::Start_ATM() {
 			Withdraw();
 		}
 
+		/*=============================== Transfer ===============================*/
 		if (var == 3) {
-			// transfer
-			Transfer();
+			/*==================== Select the Transfer Type ====================*/
+			int transfer_type; // Cash transfer = 1, Account transfer = 2
+			if (language == 1) {
+				cout << "Please select the transfer type" << endl;
+				cout << "1. Cash transfer" << endl;
+				cout << "2. Account transfer" << endl;
+			}
+			else {
+				cout << "이체 형식을 선택해주세요" << endl;
+				cout << "1. 현금 이체" << endl;
+				cout << "2. 계좌 이체" << endl;
+			}
+			cin >> transfer_type;
+			/*==================================================================*/
+
+			/*============= Enter the Destination Account Number ==============*/
+			long long  destination_account_number;
+			if (language == 1) {
+				cout << "Please enter the destination account number" << endl;
+			}
+			else {
+				cout << "도착 계좌 번호를 입력해주세요" << endl;
+			}
+			cin >> destination_account_number;
+			/*=================================================================*/
+
+			/*============================ Transfer ============================*/
+			// if Cash transfer
+			if (transfer_type == 1) {
+
+			}
+			// if Account transfer
+			if (transfer_type == 2) {
+
+			}
+			/*==================================================================*/
 		}
+		/*========================================================================*/
 
 		if (var == 4) {
 			// Cancel
@@ -129,7 +176,7 @@ public:
 	bool Confirm_password(long long _account_num, long long _input_password);// Use only after executing Exist account function. Use _account_num variable we used in Exist_account
 	void Input_balance(long long _account_num, long long _fund);//we should use at Deposit and Tranfer_in_Bank function
 	bool Output_balance(long long _account_num, long long _fund);//we should use at Withdraw and Tranfer_in_Bank function. retun false when _fund is larger than balance.
-	long long Transfer_in_Bank(long long _source_account, long long _destination_account);//Error num�� ���� ������ �����ǰ� �ϱ�, ������ü�� Bank���� �Ѱ��ϴ� ���
+	long long Transfer_in_Bank(long long _source_account, long long _destination_account);
 	Account* Find_corresponding_account(long long _account_num);//function name is same as the explanation
 
 	void Add_account_list(Account* _account);
