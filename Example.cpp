@@ -16,6 +16,7 @@ private:
 	const long long admin_card_number;
 	const long long atm_type; // Single bank ATM = 0, Multi-bank ATM = 1
 	const long long language_type; // Unilingual = 0, Bilingual = 1
+	int language; // English = 1, Korean = 2
 	long long availabe_cash = 10000000;
 	long long receive_check;
 	Bank* bank_list[5]; long long bank_list_size = 0;
@@ -32,25 +33,6 @@ public:
 	void Add_bank_list(Bank* _bank);
 };
 
-long long ATM::Menu(){
-
-}
-void ATM::Admin(){
-
-}
-void ATM::Deposit(){
-
-}
-void ATM::Withdraw(){
-
-}
-void ATM::Transfer(){
-
-}
-void ATM::Cancle(){
-
-}
-
 ATM::ATM(long long  _language_type, long long  _atm_type)
 	: serial_number{ atm_count + 100000 },
 	language_type{ _language_type },
@@ -58,10 +40,6 @@ ATM::ATM(long long  _language_type, long long  _atm_type)
 	admin_card_number{ atm_count + 100000 }
 {
 	atm_count++;
-}
-
-void ATM::Transfer() {
-	
 }
 
 void ATM::Start_ATM() {
@@ -72,7 +50,6 @@ void ATM::Start_ATM() {
 	/*================================================================*/
 
 	/*==================== Select the Language ====================*/
-	long long language; // English = 1, Korean = 2
 	// if ATM is bilingual
 	if (language_type == 1) {
 		cout << "Please select the language" << endl;
@@ -94,63 +71,87 @@ void ATM::Start_ATM() {
 	while (1) {
 		long long var = Menu();
 
+		// Deposit
 		if (var == 1) {
-			// deposit
 			Deposit();
 		}
 
+		// Withdrawal
 		if (var == 2) {
-			// withdrawal
+			
 			Withdraw();
 		}
 
-		/*=============================== Transfer ===============================*/
+		// Transfer
 		if (var == 3) {
-			/*==================== Select the Transfer Type ====================*/
-			int transfer_type; // Cash transfer = 1, Account transfer = 2
-			if (language == 1) {
-				cout << "Please select the transfer type" << endl;
-				cout << "1. Cash transfer" << endl;
-				cout << "2. Account transfer" << endl;
-			}
-			else {
-				cout << "이체 형식을 선택해주세요" << endl;
-				cout << "1. 현금 이체" << endl;
-				cout << "2. 계좌 이체" << endl;
-			}
-			cin >> transfer_type;
-			/*==================================================================*/
-
-			/*============= Enter the Destination Account Number ==============*/
-			long long  destination_account_number;
-			if (language == 1) {
-				cout << "Please enter the destination account number" << endl;
-			}
-			else {
-				cout << "도착 계좌 번호를 입력해주세요" << endl;
-			}
-			cin >> destination_account_number;
-			/*=================================================================*/
-
-			/*============================ Transfer ============================*/
-			// if Cash transfer
-			if (transfer_type == 1) {
-
-			}
-			// if Account transfer
-			if (transfer_type == 2) {
-
-			}
-			/*==================================================================*/
+			Transfer();
 		}
-		/*========================================================================*/
-
+		// Cancel
 		if (var == 4) {
-			// Cancel
 			Cancle();
 		}
 	}
 }
+
+	long long ATM::Menu() {
+
+	}
+	void ATM::Admin() {
+
+	}
+	void ATM::Deposit() {
+
+	}
+	void ATM::Withdraw() {
+
+	}
+
+	void ATM::Transfer() {
+		/*==================== Select the Transfer Type ====================*/
+		int transfer_type; // Cash transfer = 1, Account transfer = 2
+		if (language == 1) {
+			cout << "Please select the transfer type" << endl;
+			cout << "1. Cash transfer" << endl;
+			cout << "2. Account transfer" << endl;
+		}
+		else {
+			cout << "이체 형식을 선택해주세요" << endl;
+			cout << "1. 현금 이체" << endl;
+			cout << "2. 계좌 이체" << endl;
+		}
+		cin >> transfer_type;
+		/*==================================================================*/
+
+		/*============= Enter the Destination Account Number ==============*/
+		long long  destination_account_number;
+		if (language == 1) {
+			cout << "Please enter the destination account number" << endl;
+		}
+		else {
+			cout << "도착 계좌 번호를 입력해주세요" << endl;
+		}
+		cin >> destination_account_number;
+		/*=================================================================*/
+
+		/*============================ Transfer ============================*/
+		// if Cash transfer
+		if (transfer_type == 1) {
+
+			if (language == 1) {
+				cout << "Please enter the amount of cash that you want to pay" << endl;
+			}
+		}
+		// if Account transfer
+		if (transfer_type == 2) {
+
+		}
+		/*==================================================================*/
+	}
+
+	void ATM::Cancle() {
+
+	}
+
 void ATM::Add_bank_list(Bank* _bank){
 	bank_list[bank_list_size++] = _bank;
 }
