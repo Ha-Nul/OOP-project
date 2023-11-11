@@ -9,7 +9,7 @@ class Bank;
 class Account;
 
 
-///////ATM Block////////////////////////////////////////////////////////////////////////////////////////////
+/*-------------------------------------ATM region-------------------------------------------------------------------------------*/
 
 class ATM {
 private:
@@ -20,28 +20,56 @@ private:
 	const long long language_type; // Unilingual = 0, Bilingual = 1
 	long long availabe_cash = 10000000;
 	long long receive_check;
-	Bank* bank_list[5];//construction emf 
-	eo
+	Bank* bank_list[5]; long long bank_list_size = 0;
 	string file_name;
 	long long Menu();
 	void Admin();
 	void Deposit();
 	void Withdraw();
-	void Transfer(); //Transper_in_Bank È°¿ë
-	void Cancle();// µ¿ÀÛ Áß°£ Áß°£¿¡ cancle ´©¸£¸é cancleÀÌ ´­·Á¼­ Á¾·áµÈ´Ù´Â ¸»°ú ÇÔ²² sessionÀÌ Á¾·áµÊ.
+	void Transfer(); //Transper_in_Bank È°ï¿½ï¿½
+	void Cancle();// ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ ï¿½ß°ï¿½ï¿½ï¿½ cancle ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ cancleï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È´Ù´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô²ï¿½ sessionï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½.
 public:
 	ATM(long long _language_type, long long _atm_type);
 	void Start_ATM();
+	void Add_bank_list(Bank* _bank);
 };
 
+long long ATM::Menu(){
 
+}
+void ATM::Admin(){
+
+}
+void ATM::Deposit(){
+
+}
+void ATM::Withdraw(){
+
+}
+void ATM::Transfer(){
+
+}
+void ATM::Cancle(){
+
+}
+
+
+
+ATM::ATM(long long  _language_type, long long  _atm_type)
+	: serial_number{ atm_count + 100000 },
+	language_type{ _language_type },
+	atm_type{ _atm_type },
+	admin_card_number{ atm_count + 100000 }
+{
+	atm_count++;
+}
 void ATM::Start_ATM() {
-	// Ä«µå ¹øÈ£ ¹Þ±â
+	// Ä«ï¿½ï¿½ ï¿½ï¿½È£ ï¿½Þ±ï¿½
 	long long _account_number;
 	cin >> _account_number;
 
 	if (language_type == 1) {
-		//¾ð¾î ¼±ÅÃ ¹°¾îº¸°í ¹Ù²Ù±â
+		//ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½îº¸ï¿½ï¿½ ï¿½Ù²Ù±ï¿½
 		long long language;
 		cin >> language;
 	}
@@ -51,8 +79,8 @@ void ATM::Start_ATM() {
 		return;
 	}
 
-	while (1) {//»ç¿ëÀÚ°¡ cancle button¹öÆ° ´©¸£°Å³ª exceptional situationÀÏ¾î³ª¸é Á¾·á
-		//¸Þ´ºÃ¢ ¶ç¿ì±â
+	while (1) {//ï¿½ï¿½ï¿½ï¿½Ú°ï¿½ cancle buttonï¿½ï¿½Æ° ï¿½ï¿½ï¿½ï¿½ï¿½Å³ï¿½ exceptional situationï¿½Ï¾î³ªï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+		//ï¿½Þ´ï¿½Ã¢ ï¿½ï¿½ï¿½ï¿½
 		long long var = Menu();
 
 		if (var == 1) {
@@ -76,57 +104,100 @@ void ATM::Start_ATM() {
 		}
 	}
 }
-
-ATM::ATM(long long  _language_type, long long  _atm_type)
-	: serial_number{ atm_count + 100000 },
-	language_type{ _language_type },
-	atm_type{ _atm_type },
-	admin_card_number{ atm_count + 100000 }
-{
-	atm_count++;
+void ATM::Add_bank_list(Bank* _bank){
+	bank_list[bank_list_size++] = _bank;
 }
 
 
 
 
 
-////////Bank Block///////////////////////////////////////////////////////////////////////////////////////////
+/*-------------------------------------Bank region-------------------------------------------------------------------------------*/
 class Bank {
 private:
 	const string bank_name;
-	ATM* atm_list[5];
-	Account* account_list[10];
+	ATM* atm_list[5]; long long atm_list_size = 0;
+	Account* account_list[10]; long long account_list_size = 0;
+
 public:
 	Bank(string _bank_name);
 
 	string Call_bank_name();
+	long long Call_balance(long long _account_num); // Use only after executing Exist account and Confirm_password functions. Use _account_num variable we used in Exist_account
 
-	bool Eixst_account(long long _account_num);
-	bool Confirm_password(long long _account_num, long long _input_password);
-	void Input_balance(long long _account_num, long long _fund);
-	bool Output_balance(long long _account_num, long long _fund);
-	long long Call_balance(long long _account_num);
-	long long Transfer_in_Bank(long long _source_account, long long _destination_account);//Error num¿¡ µû¶ó ¿¡·¯°¡ »ý¼ºµÇ°Ô ÇÏ±â, °èÁÂÀÌÃ¼¸¸ Bank¿¡¼­ ÃÑ°ýÇÏ´Â ¹æ½Ä
+	bool Exist_account(long long _account_num);
+	bool Confirm_password(long long _account_num, long long _input_password);// Use only after executing Exist account function. Use _account_num variable we used in Exist_account
+	void Input_balance(long long _account_num, long long _fund);//we should use at Deposit and Tranfer_in_Bank function
+	bool Output_balance(long long _account_num, long long _fund);//we should use at Withdraw and Tranfer_in_Bank function. retun false when _fund is larger than balance.
+	long long Transfer_in_Bank(long long _source_account, long long _destination_account);//Error numï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ ï¿½Ï±ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ Bankï¿½ï¿½ï¿½ï¿½ ï¿½Ñ°ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½
+	Account* Find_corresponding_account(long long _account_num);//function name is same as the explanation
 
 	void Add_account_list(Account* _account);
-	void Add_atm_list///////////////////
-};
+	void Add_atm_list(ATM* _atm);
 
-Bank* bank_list[5];
-int bank_list_size = 0;
+}; Bank* bank_list[5]; int bank_list_size = 0; //Global variables
 
 Bank::Bank(string _bank_name) : bank_name(_bank_name) {
 	bank_list[bank_list_size++] = this;
-
-
 }
+
 
 string Bank::Call_bank_name() {
 	return bank_name;
 }
+long long Bank::Call_balance(long long _account_num){
+	return Find_corresponding_account(_account_num)->Call_balance();
+}
 
 
-////////Account Block///////////////////////////////////////////////////////////////////////////////////////////
+bool Bank::Exist_account(long long _account_num){
+	for (int i = 0 ; i < account_list_size ; i++){
+		if (account_list[i]->Call_account_number() == _account_num ){
+			return true;
+		}}
+	return false;
+}
+bool Bank::Confirm_password(long long _account_num, long long _input_password){
+	if (Find_corresponding_account(_account_num)->Call_password() == _input_password){
+		return true;
+	}
+	else{
+		return false;
+	}
+}
+void Bank::Input_balance(long long _account_num, long long _fund){
+	Find_corresponding_account(_account_num)->balance += _fund;
+}
+bool Bank::Output_balance(long long _account_num, long long _fund){
+	Account* curr_acc = Find_corresponding_account(_account_num);
+	if(curr_acc->Call_balance() < _fund ){
+		return false;
+	}
+	else{
+		curr_acc->balance -= _fund;
+		return true;
+	}
+}
+long long Bank::Transfer_in_Bank(long long _source_account, long long _destination_account){
+	//implement it here
+}
+Account* Bank::Find_corresponding_account(long long _account_num){
+	for (int i = 0 ; i < account_list_size ; i++){
+		if (account_list[i]->Call_account_number() == _account_num ){//Assume that there must exist corresponding account
+			return account_list[i];
+		}}
+}
+
+
+void Bank::Add_account_list(Account* _account){
+	account_list[account_list_size++] = _account;
+}
+void Bank::Add_atm_list(ATM* _atm){
+	atm_list[atm_list_size++] = _atm;
+}
+
+
+/*-------------------------------------Account region-------------------------------------------------------------------------------*/
 class Account {
 private:
 	static long long account_count;
@@ -134,7 +205,9 @@ private:
 	const Bank* bank;
 	const long long account_number;
 	const long long password;
-	long long balance;
+	long long balance; //control only at Constructor, Input_balance and output_balance functions.
+	friend void Bank::Input_balance(long long _account_num, long long _fund); //set freind function. control balance at this function of Bank class
+	friend bool Bank::Output_balance(long long _account_num, long long _fund); //set freind function. control balance at this function of Bank class
 public:
 	Account(string _user_name, Bank* _bank, long long _password, long long _balance);
 	
@@ -180,7 +253,8 @@ long long Account::Call_balance() {
 
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+/*-------------------------------------Main region-------------------------------------------------------------------------------*/
+
 int main() {
 	
 
