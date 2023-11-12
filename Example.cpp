@@ -35,19 +35,20 @@ private:
 	bool Account_Exist(long long account_number);
 	Bank* Call_Bank_of_account(long long account_number);
 public:
-	ATM(Bank* primary_bank, long long _language_type, long long _atm_type);
+	ATM(Bank* _primary_bank, long long _language_type, long long _atm_type);
 	void Start_ATM();
 	void Add_bank_list(Bank* _bank);
 };
 
-ATM::ATM(Bank* primary_bank, long long  _language_type, long long  _atm_type)
+ATM::ATM(Bank* _primary_bank, long long  _language_type, long long  _atm_type)
 	: serial_number{ atm_count + 100000 },
 	language_type{ _language_type },
 	atm_type{ _atm_type },
 	admin_card_number{ atm_count + 100000 },
-	primary_bank{ primary_bank }
+	primary_bank{ _primary_bank }
 {
 	atm_count++;
+	_primary_bank->Add_atm_list(this);
 	//Error message for preparing code demostration.
 	if ((_language_type != 0)&&(_language_type != 1)){
 		cout << "ERROR::Please input language_type either 0 or 1" << endl;
@@ -503,19 +504,13 @@ int main() {
 	Account* account_5 = new Account("조수호", SH_bank ,202111178, 4000000);
 
 
-	ATM* atm_SingUnil = new ATM(0, 0);
-	ATM* atm_SingBili = new ATM(0, 1);
-	ATM* atm_MultUnil = new ATM(1, 0);
-	ATM* atm_MultBili = new ATM(1, 1);
+	ATM* atm_SingUnil = new ATM(HN_bank, 0, 0);
+	ATM* atm_SingBili = new ATM(JS_bank, 0, 1);
+	ATM* atm_MultUnil = new ATM(HG_bank, 1, 0);
+	ATM* atm_MultBili = new ATM(SH_bank, 1, 1);
 
-
-	atm_SingUnil->Add_bank_list(HN_bank);
-	atm_SingBili->Add_bank_list(JS_bank);
-
-	atm_MultUnil->Add_bank_list(HG_bank);
 	atm_MultUnil->Add_bank_list(SH_bank);
 	atm_MultBili->Add_bank_list(HG_bank);
-	atm_MultBili->Add_bank_list(SH_bank);
 
 
 	//Execute an atm what you want
