@@ -43,6 +43,13 @@ ATM::ATM(long long  _language_type, long long  _atm_type)
 	admin_card_number{ atm_count + 100000 }
 {
 	atm_count++;
+	//Error message for preparing code demostration.
+	if ((_language_type != 0)&&(_language_type != 1)){
+		cout << "ERROR::Please input language_type either 0 or 1" << endl;
+	}
+	if((_atm_type!=0)&&(_atm_type!=1)){
+		cout << "ERROR::Please input atm_type either 0 or 1" << endl;
+	}
 }
 
 bool ATM::Allowed_cash(long long cash) {
@@ -284,7 +291,14 @@ void ATM::Start_ATM() {
 	}
 
 void ATM::Add_bank_list(Bank* _bank){
+	//Error message for preparing code demostration.
+	if ((atm_type==0)&&(bank_list_size >= 1)){
+		cout << "ERROR:This is SingleBank ATM. Please do not add more Bank. The adding Bank is ignored" << endl;
+		return;
+	}
+	
 	bank_list[bank_list_size++] = _bank;
+	_bank->Add_atm_list(this);
 }
 
 
@@ -311,8 +325,8 @@ public:
 	long long Transfer_in_Bank(long long _source_account, long long _destination_account);
 	Account* Find_corresponding_account(long long _account_num);//function name is same as the explanation
 
-	void Add_account_list(Account* _account);
-	void Add_atm_list(ATM* _atm);
+	void Add_account_list(Account* _account);//This function is executed by Account constructor.
+	void Add_atm_list(ATM* _atm);//This function is executed by  ATM::Add_bank_list function.
 
 }; Bank* bank_list[5]; int bank_list_size = 0; //Global variables
 
@@ -409,6 +423,7 @@ Account::Account(string _user_name, Bank* _bank, long long _password, long long 
 	account_number{ 100000000000 + account_count }
 {
 	account_count++;
+	_bank->Add_account_list(this);
 }
 
 string Account::Call_user_name() {
@@ -435,7 +450,36 @@ long long Account::Call_balance() {
 /*-------------------------------------Main region-------------------------------------------------------------------------------*/
 
 int main() {
-	
+	Bank* HN_bank =new Bank{"HN은행"};
+	Bank* JS_bank = new Bank{"JS은행"};
+	Bank* HG_bank = new Bank{"HG은행"};
+	Bank* SH_bank = new Bank{"SH은행"};
+
+	Account* account_1 = new Account("석하늘", HN_bank ,202321012, 1000000);
+	Account* account_2 = new Account("김재석", JS_bank ,202111036, 2000000);
+	Account* account_3 = new Account("김재석", JS_bank ,202111036, 0);//Second account at same bank
+	Account* account_4 = new Account("성현규", HG_bank ,202111095, 3000000);
+	Account* account_5 = new Account("조수호", SH_bank ,202111178, 4000000);
+
+
+	ATM* atm_SingUnil = new ATM(0, 0);
+	ATM* atm_SingBili = new ATM(0, 1);
+	ATM* atm_MultUnil = new ATM(1, 0);
+	ATM* atm_MultBili = new ATM(1, 1);
+
+
+	atm_SingUnil->Add_bank_list(HN_bank);
+	atm_SingBili->Add_bank_list(JS_bank);
+
+	atm_MultUnil->Add_bank_list(HG_bank);
+	atm_MultUnil->Add_bank_list(SH_bank);
+	atm_MultBili->Add_bank_list(HG_bank);
+	atm_MultBili->Add_bank_list(SH_bank);
+
+
+	//Execute an atm what you want
+	atm_MultBili->Start_ATM();
+
 
 	return 0;
 }
