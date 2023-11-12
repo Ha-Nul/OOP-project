@@ -29,6 +29,7 @@ private:
 	void Cancle();
 	bool Allowed_cash(long long cash);
 	bool Allowed_check(long long check);
+	bool Account_Exist(long long account_number);
 public:
 	ATM(long long _language_type, long long _atm_type);
 	void Start_ATM();
@@ -74,6 +75,16 @@ bool ATM::Allowed_check(long long check) {
 		}
 	}
 	return result;
+}
+
+bool ATM::Account_Exist(long long account_number) {
+	for (int i = 0; i < bank_list_size; i++) {
+		Bank* bank = bank_list[i];
+		if (bank->Exist_account(account_number)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void ATM::Start_ATM() {
@@ -143,55 +154,128 @@ void ATM::Start_ATM() {
 	void ATM::Transfer() {
 		/*==================== Select the Transfer Type ====================*/
 		int transfer_type; // Cash transfer = 1, Account transfer = 2
-		if (language == 1) {
-			cout << "Please select the transfer type" << endl;
-			cout << "1. Cash transfer" << endl;
-			cout << "2. Account transfer" << endl;
+		while (1) {
+			if (language == 1) {
+				cout << "Please select the transfer type" << endl;
+				cout << "1. Cash transfer" << endl;
+				cout << "2. Account transfer" << endl;
+			}
+			else {
+				cout << "이체 형식을 선택해주세요" << endl;
+				cout << "1. 현금 이체" << endl;
+				cout << "2. 계좌 이체" << endl;
+			}
+			cin >> transfer_type;
+			if (transfer_type == 1) {
+				if (language == 1) {
+					cout << "Cash transfer was selected" << endl;
+				}
+				else {
+					cout << "현금 이체가 선택되었습니다" << endl;
+				}
+				break;
+			}
+			else if (transfer_type == 2) {
+				if (language == 1) {
+					cout << "Account transfer is selected" << endl;
+				}
+				else {
+					cout << "계좌 이체가 선택되었습니다" << endl;
+				}
+				break;
+			}
+			else {
+				if (language == 1) {
+					cout << "Please enter the number 1 or 2" << endl;
+				}
+				else {
+					cout << "숫자 1 또는 2를 입력해주세요" << endl;
+				}
+				continue;
+			}
 		}
-		else {
-			cout << "이체 형식을 선택해주세요" << endl;
-			cout << "1. 현금 이체" << endl;
-			cout << "2. 계좌 이체" << endl;
-		}
-		cin >> transfer_type;
 		/*==================================================================*/
 
 		/*============= Enter the Destination Account Number ==============*/
 		long long  destination_account_number;
-		if (language == 1) {
-			cout << "Please enter the destination account number" << endl;
+		while (1) {
+			if (language == 1) {
+				cout << "Please enter the destination account number" << endl;
+			}
+			else {
+				cout << "도착 계좌 번호를 입력해주세요" << endl;
+			}
+			cin >> destination_account_number;
+			if (Account_Exist(destination_account_number)) {
+				if (language == 1) {
+					cout << "The destination account number is " << destination_account_number << endl;
+				}
+				else {
+					cout << "도착 계좌 번호는 " << destination_account_number << " 입니다" << endl;
+				}
+				break;
+			}
+			else {
+				if (language == 1) {
+					cout << "The destination account number is not exist" << endl;
+				}
+				else {
+					cout << "도착 계좌 번호가 존재하지 않습니다" << endl;
+				}
+				continue;
+			}
 		}
-		else {
-			cout << "도착 계좌 번호를 입력해주세요" << endl;
-		}
-		cin >> destination_account_number;
 		/*=================================================================*/
 
-		/*============================ Transfer ============================*/
+		/*================== Recieve Cash Transfer payment ==================*/
 		// if Cash transfer
 		if (transfer_type == 1) {
 			long long pay;
 			while (1) {
 				if (language == 1) {
+					cout << "Please pay the amount that you want to cash transfer plus cash transfer fee KRW 5000" << endl;
 					cout << "Please enter the amount of cash that you want to pay" << endl;
 				}
 				else {
+					cout << "현금 이체하실 금액에 현금 이체 수수료 5000 원을 더하여 지불해주세요" << endl;
 					cout << "지불하실 현금의 금액를 입력해주세요";
 				}
 				cin >> pay;
 				if (Allowed_cash(pay) == false) {
 					continue;
 				}
+				else if (pay <= 5000) {
+					if (language == 1) {
+						cout << "Your payment is less than or equal to the cash transfer fee" << endl;
+					}
+					else {
+						cout << "지불하신 금액이 현금 이체 수수료보다 작거나 같습니다" << endl;
+					}
+					continue;
+				}
 				else {
+					if (language == 1) {
+						cout << "Your payment is KRW " << pay << endl;
+						cout << "The amount of cash transfer: KRW " << pay - 5000 << endl;
+						cout << "Cash transfer fee: KRW " << 5000 << endl;
+					}
+					else {
+						cout << "지불하신 금액은 " << pay << " 원입니다" << endl;
+						cout << "현금 이체 금액: " << pay << " 원" << endl;
+						cout << "현금 이체 수수료: " << 5000 << " 원" << endl;
+					}
 					break;
 				}
 			}
-
 		}
 		// if Account transfer
 		if (transfer_type == 2) {
 
 		}
+		/*===================================================================*/
+
+		/*==================== Find Destination account ====================*/
+
 		/*==================================================================*/
 	}
 
