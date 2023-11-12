@@ -17,9 +17,12 @@ private:
 	const long long atm_type; // Single bank ATM = 0, Multi-bank ATM = 1
 	const long long language_type; // Unilingual = 0, Bilingual = 1
 	int language; // English = 1, Korean = 2
+	long long _account_number;
 	long long availabe_cash = 10000000;
 	long long receive_check;
-	Bank* bank_list[5]; long long bank_list_size = 0;
+	const Bank* primary_bank;
+	Bank* bank_list[5];
+	long long bank_list_size = 0;
 	string file_name;
 	long long Menu();
 	void Admin();
@@ -30,17 +33,19 @@ private:
 	bool Allowed_cash(long long cash);
 	bool Allowed_check(long long check);
 	bool Account_Exist(long long account_number);
+	Bank* Call_Bank_of_account(long long account_number);
 public:
-	ATM(long long _language_type, long long _atm_type);
+	ATM(Bank* primary_bank, long long _language_type, long long _atm_type);
 	void Start_ATM();
 	void Add_bank_list(Bank* _bank);
 };
 
-ATM::ATM(long long  _language_type, long long  _atm_type)
+ATM::ATM(Bank* primary_bank, long long  _language_type, long long  _atm_type)
 	: serial_number{ atm_count + 100000 },
 	language_type{ _language_type },
 	atm_type{ _atm_type },
-	admin_card_number{ atm_count + 100000 }
+	admin_card_number{ atm_count + 100000 },
+	primary_bank{ primary_bank }
 {
 	atm_count++;
 	//Error message for preparing code demostration.
@@ -94,9 +99,19 @@ bool ATM::Account_Exist(long long account_number) {
 	return false;
 }
 
+Bank* ATM::Call_Bank_of_account(long long account_number) {
+	Bank* bank;
+	for (int i = 0; i < bank_list_size; i++) {
+		Bank* bank = bank_list[i];
+		if (bank->Exist_account(account_number)) {
+			return bank;
+		}
+	}
+	return nullptr;
+}
+
 void ATM::Start_ATM() {
 	/*=================== Enter the account number ===================*/
-	long long _account_number;
 	cout << "Please enter your card(account) number" << endl;
 	cin >> _account_number;
 	/*================================================================*/
@@ -234,10 +249,13 @@ void ATM::Start_ATM() {
 		}
 		/*=================================================================*/
 
-		/*================== Recieve Cash Transfer payment ==================*/
+		/*============================ Transfer ============================*/
 		// if Cash transfer
 		if (transfer_type == 1) {
+
+			/*=================== Recieve Cash Transfer Payment ===================*/
 			long long pay;
+			long long cash_transfer_fee = 5000;
 			while (1) {
 				if (language == 1) {
 					cout << "Please pay the amount that you want to cash transfer plus cash transfer fee KRW 5000" << endl;
@@ -251,7 +269,7 @@ void ATM::Start_ATM() {
 				if (Allowed_cash(pay) == false) {
 					continue;
 				}
-				else if (pay <= 5000) {
+				else if (pay <= cash_transfer_fee) {
 					if (language == 1) {
 						cout << "Your payment is less than or equal to the cash transfer fee" << endl;
 					}
@@ -262,27 +280,53 @@ void ATM::Start_ATM() {
 				}
 				else {
 					if (language == 1) {
-						cout << "Your payment is KRW " << pay << endl;
-						cout << "The amount of cash transfer: KRW " << pay - 5000 << endl;
-						cout << "Cash transfer fee: KRW " << 5000 << endl;
+						cout << "The total amount that you paid is KRW " << pay << endl;
+						cout << "The amount of cash transfer: KRW " << pay - cash_transfer_fee << endl;
+						cout << "Cash transfer fee: KRW " << cash_transfer_fee << endl;
 					}
 					else {
-						cout << "지불하신 금액은 " << pay << " 원입니다" << endl;
+						cout << "지불하신 총 금액은 " << pay << " 원입니다" << endl;
 						cout << "현금 이체 금액: " << pay << " 원" << endl;
-						cout << "현금 이체 수수료: " << 5000 << " 원" << endl;
+						cout << "현금 이체 수수료: " << cash_transfer_fee << " 원" << endl;
 					}
+					availabe_cash += pay;
 					break;
 				}
 			}
+			/*=====================================================================*/
+
+			/*============== Increase Balance of Destination Account ==============*/
+
+			/*=====================================================================*/
 		}
+
 		// if Account transfer
 		if (transfer_type == 2) {
 
+			/*=================== Determine Account Transfer Fee ===================*/
+			long long account_transfer_fee;
+			if (Call_Bank_of_account(_account_number) == primary_bank) {
+				if (Call_Bank_of_account(destination_account_number) == primary_bank) {
+					account_transfer_fee = 2000;
+				}
+				else {
+					account_transfer_fee = 3000;
+				}
+			}
+			if (Call_Bank_of_account(_account_number) != primary_bank) {
+				if (Call_Bank_of_account(destination_account_number) == primary_bank) {
+					account_transfer_fee = 3000;
+				}
+				else {
+					account_transfer_fee = 4000;
+				}
+			}
+			/*======================================================================*/
+
+			/*====================== Check Sufficient Balance ======================*/
+
+			/*======================================================================*/
 		}
-		/*===================================================================*/
-
-		/*==================== Find Destination account ====================*/
-
 		/*==================================================================*/
 	}
 
@@ -322,7 +366,6 @@ public:
 	bool Confirm_password(long long _account_num, long long _input_password);// Use only after executing Exist account function. Use _account_num variable we used in Exist_account
 	void Input_balance(long long _account_num, long long _fund);//we should use at Deposit and Tranfer_in_Bank function
 	bool Output_balance(long long _account_num, long long _fund);//we should use at Withdraw and Tranfer_in_Bank function. retun false when _fund is larger than balance.
-	long long Transfer_in_Bank(long long _source_account, long long _destination_account);
 	Account* Find_corresponding_account(long long _account_num);//function name is same as the explanation
 
 	void Add_account_list(Account* _account);//This function is executed by Account constructor.
@@ -371,9 +414,7 @@ bool Bank::Output_balance(long long _account_num, long long _fund){
 		return true;
 	}
 }
-long long Bank::Transfer_in_Bank(long long _source_account, long long _destination_account){
-	//implement it here
-}
+
 Account* Bank::Find_corresponding_account(long long _account_num){
 	for (int i = 0 ; i < account_list_size ; i++){
 		if (account_list[i]->Call_account_number() == _account_num ){//Assume that there must exist corresponding account
