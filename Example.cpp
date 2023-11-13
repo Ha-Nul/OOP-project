@@ -259,11 +259,11 @@ void ATM::Start_ATM() {
 			long long cash_transfer_fee = 5000;
 			while (1) {
 				if (language == 1) {
-					cout << "Please pay the amount that you want to cash transfer plus cash transfer fee KRW 5000" << endl;
+					cout << "Please pay the amount that you want to cash transfer plus cash transfer fee KRW " << cash_transfer_fee << endl;
 					cout << "Please enter the amount of cash that you want to pay" << endl;
 				}
 				else {
-					cout << "현금 이체하실 금액에 현금 이체 수수료 5000 원을 더하여 지불해주세요" << endl;
+					cout << "현금 이체하실 금액에 현금 이체 수수료 " << cash_transfer_fee << " 원을 더하여 지불해주세요" << endl;
 					cout << "지불하실 현금의 금액를 입력해주세요";
 				}
 				cin >> pay;
