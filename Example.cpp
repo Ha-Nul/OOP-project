@@ -175,6 +175,10 @@ void ATM::Start_ATM() {
 	}
 
 	void ATM::Transfer() {
+		/*===================== Set the Source Bank =====================*/
+		Bank* source_bank = Call_Bank_of_account(_account_number);
+		/*===============================================================*/
+
 		/*==================== Select the Transfer Type ====================*/
 		int transfer_type; // Cash transfer = 1, Account transfer = 2
 		while (1) {
@@ -199,11 +203,14 @@ void ATM::Start_ATM() {
 				break;
 			}
 			else if (transfer_type == 2) {
+				
 				if (language == 1) {
 					cout << "Account transfer is selected" << endl;
+					cout << "The withdrawal account is " << source_bank->Call_bank_name() << " " << _account_number << endl;
 				}
 				else {
 					cout << "계좌 이체가 선택되었습니다" << endl;
+					cout << "출금 계좌는 " << source_bank->Call_bank_name() << " " << _account_number << " 입니다" << endl;
 				}
 				break;
 			}
@@ -226,7 +233,7 @@ void ATM::Start_ATM() {
 				cout << "Please enter the destination account number" << endl;
 			}
 			else {
-				cout << "도착 계좌 번호를 입력해주세요" << endl;
+				cout << "입금 계좌 번호를 입력해주세요" << endl;
 			}
 			cin >> destination_account_number;
 			if (Account_Exist(destination_account_number)) {
@@ -234,7 +241,7 @@ void ATM::Start_ATM() {
 					cout << "The destination account number is " << destination_account_number << endl;
 				}
 				else {
-					cout << "도착 계좌 번호는 " << destination_account_number << " 입니다" << endl;
+					cout << "입금 계좌 번호는 " << destination_account_number << " 입니다" << endl;
 				}
 				break;
 			}
@@ -243,11 +250,12 @@ void ATM::Start_ATM() {
 					cout << "The destination account number is not exist" << endl;
 				}
 				else {
-					cout << "도착 계좌 번호가 존재하지 않습니다" << endl;
+					cout << "입금 계좌 번호가 존재하지 않습니다" << endl;
 				}
 				continue;
 			}
 		}
+		Bank* destination_bank = Call_Bank_of_account(destination_account_number);
 		/*=================================================================*/
 
 		/*============================ Transfer ============================*/
@@ -264,7 +272,7 @@ void ATM::Start_ATM() {
 				}
 				else {
 					cout << "현금 이체하실 금액에 현금 이체 수수료 " << cash_transfer_fee << " 원을 더하여 지불해주세요" << endl;
-					cout << "지불하실 현금의 금액를 입력해주세요";
+					cout << "지불하실 현금의 금액를 입력해주세요" << endl;
 				}
 				cin >> pay;
 				if (Allowed_cash(pay) == false) {
@@ -297,7 +305,17 @@ void ATM::Start_ATM() {
 			/*=====================================================================*/
 
 			/*============== Increase Balance of Destination Account ==============*/
+			destination_bank->Input_balance(destination_account_number, pay - cash_transfer_fee);
+			/*=====================================================================*/
 
+			/*============================ End Session ============================*/
+			if (language == 1) {
+				cout << "The cash transfer of KRW " << pay - cash_transfer_fee << " to " << destination_bank->Call_bank_name() << " " << destination_account_number << " was performed successfully" << endl;
+			}
+			else {
+				cout << pay - cash_transfer_fee << " 원이 " << destination_bank->Call_bank_name() << " " << destination_account_number << " 으로 현금 이체 되었습니다" << endl;
+			}
+			return;
 			/*=====================================================================*/
 		}
 
@@ -306,16 +324,16 @@ void ATM::Start_ATM() {
 
 			/*=================== Determine Account Transfer Fee ===================*/
 			long long account_transfer_fee;
-			if (Call_Bank_of_account(_account_number) == primary_bank) {
-				if (Call_Bank_of_account(destination_account_number) == primary_bank) {
+			if (source_bank == primary_bank) {
+				if (destination_bank == primary_bank) {
 					account_transfer_fee = 2000;
 				}
 				else {
 					account_transfer_fee = 3000;
 				}
 			}
-			if (Call_Bank_of_account(_account_number) != primary_bank) {
-				if (Call_Bank_of_account(destination_account_number) == primary_bank) {
+			if (source_bank != primary_bank) {
+				if (destination_bank == primary_bank) {
 					account_transfer_fee = 3000;
 				}
 				else {
@@ -324,9 +342,58 @@ void ATM::Start_ATM() {
 			}
 			/*======================================================================*/
 
-			/*====================== Check Sufficient Balance ======================*/
+			/*================== Enter the Amount of Account Transfer ==================*/
+			long long amount_transfer;
+			while (1) {
+				if (language == 1) {
+					cout << "The balance of source account: KRW " << source_bank->Call_balance(_account_number) << endl;
+					cout << "In the case of account transfer, the account transfer fee KRW " << account_transfer_fee << " will be paid from the source account" << endl;
+					cout << "Please enter the amount of transfer" << endl;
+				}
+				else {
+					cout << "출금 계좌의 잔액: " << source_bank->Call_balance(_account_number) << " 원" << endl;
+					cout << "계좌 이체의 경우 계좌 이체 수수료 " << account_transfer_fee << " 원이 출금 계좌에서 추가로 지불됩니다" << endl;
+					cout << "송금하실 금액을 입력해주세요" << endl;
+				}
+				cin >> amount_transfer;
+				if (source_bank->Call_balance(_account_number) < amount_transfer + account_transfer_fee) {
+					if (language == 1) {
+						cout << "The balance of source account is not sufficient" << endl;
+					}
+					else {
+						cout << "출금 계좌의 잔액이 부족합니다" << endl;
+					}
+					continue;
+				}
+				else {
+					if (language == 1) {
+						cout << "The amount of account transfer: KRW " << amount_transfer << endl;
+						cout << "Account transfer fee: KRW " << account_transfer_fee << endl;
+					}
+					else {
+						cout << "송금 금액: " << amount_transfer << " 원" << endl;
+						cout << "계좌 이체 수수료: " << account_transfer_fee << " 원" << endl;
+					}
+					break;
+				}
+			}
+			/*==========================================================================*/
 
-			/*======================================================================*/
+			/*=================== Decrease and Increase Balance ===================*/
+			source_bank->Output_balance(_account_number, amount_transfer + account_transfer_fee);
+			destination_bank->Input_balance(destination_account_number, amount_transfer);
+			/*=====================================================================*/
+
+			/*============================ End Session ============================*/
+			if (language == 1) {
+				cout << "The account transfer of KRW " << amount_transfer << " from " << source_bank->Call_bank_name() << " " << _account_number << " to " << destination_bank->Call_bank_name() << " " << destination_account_number << " was performed successfully" << endl;
+			}
+			else {
+				cout << amount_transfer << " 원이 " << source_bank->Call_bank_name() << " " << _account_number << " 에서 " << destination_bank->Call_bank_name() << " " << destination_account_number << " 으로 계좌 이체 되었습니다" << endl;
+			}
+			return;
+			/*=====================================================================*/
+
 		}
 		/*==================================================================*/
 	}
