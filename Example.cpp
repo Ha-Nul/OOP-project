@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 
 using namespace std;
@@ -26,6 +27,7 @@ private:
 	string file_name;
 	long long Menu();
 	void Admin();
+	void Admin_SAVE_TEXT(long long ID, long long CARDNUM, int TYPE, long long AMOUNT, string ETC);
 	void Deposit();
 	void Withdraw();
 	void Transfer();
@@ -39,6 +41,33 @@ public:
 	void Start_ATM();
 	void Add_bank_list(Bank* _bank);
 };
+
+ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _AMOUNT, string ETC){
+	
+	string SAVE_MENU_NAME;
+	
+	if (_TYPE == 1){
+		SAVE_MENU_NAME = "Deposit";
+	}
+	else if (_TYPE == 2){
+		SAVE_MENU_NAME = "Withdraw";
+	}
+	else if (_TYPE == 3){
+		SAVE_MENU_NAME = "Transfer";
+	}
+	else if (_TYPE == 4){
+		SAVE_MENU_NAME = "CANCEL selected";
+		ETC = "CANCELED";
+	}
+	
+	ofstream out("TRANSACTION_HISTORY.txt",ios::app);
+    string s;
+
+    if (out.is_open())
+    {
+        out << _ID << "\t" << _CARD << "\t" << _TYPE << "\t" << _AMOUNT << "\t" << ETC << "\n";
+    }
+}
 
 ATM::ATM(Bank* _primary_bank, long long  _language_type, long long  _atm_type)
 	: serial_number{ atm_count + 100000 },
@@ -559,6 +588,14 @@ long long Account::Call_balance() {
 /*-------------------------------------Main region-------------------------------------------------------------------------------*/
 
 int main() {
+
+	ofstream out("ADMIN.txt");
+	string s;
+	if(out.is_open()){
+		out << "TRANSACTION_HISTORY" << "\n";
+		out << "ID" << "\t" << "CARD_NUM" << "\t" << "TYPES" << "\t" << "AMOUNT" << "\t" << "ETC" << "\n";		
+	}
+
 	Bank* HN_bank =new Bank{"HN은행"};
 	Bank* JS_bank = new Bank{"JS은행"};
 	Bank* HG_bank = new Bank{"HG은행"};
