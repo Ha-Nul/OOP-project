@@ -15,6 +15,7 @@ private:
 	static long long atm_count;
 	const long long serial_number;
 	const long long admin_card_number;
+	long long Transaction_Id = 0; // const 미사용, 이거 안써도 괜찮은건지 물어볼 것.
 	const long long atm_type; // Single bank ATM = 0, Multi-bank ATM = 1
 	const long long language_type; // Unilingual = 0, Bilingual = 1
 	int language; // English = 1, Korean = 2
@@ -27,7 +28,7 @@ private:
 	//string file_name;
 	long long Menu();
 	void Admin();
-	void Admin_SAVE_TEXT(long long ID, long long CARDNUM, int TYPE, long long AMOUNT, string ETC);
+	void Admin_SAVE_TEXT(long long ID, long long CARDNUM, int TYPE, long long AMOUNT, long long ETC_Account_Number, long long ETC_Destination_Number, long long ETC_Transaction_fee);
 	void Deposit();
 	void Withdraw();
 	void Transfer();
@@ -42,9 +43,12 @@ public:
 	void Add_bank_list(Bank* _bank);
 };
 
-void ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _AMOUNT, string ETC){
+void ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _AMOUNT, long long ETC_Account_Number, long long ETC_Destination_Number){
 	
 	string SAVE_MENU_NAME;
+	long long ADMIN_SAVE_edit_Account_Number = 0;
+	long long ADMIN_SAVE_edit_Destination_Number = 0;
+	long long 
 	
 	if (_TYPE == 1){
 		SAVE_MENU_NAME = "Deposit";
@@ -54,6 +58,8 @@ void ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _
 	}
 	else if (_TYPE == 3){
 		SAVE_MENU_NAME = "Transfer";
+		ADMIN_SAVE_edit_Account_Number = ETC_Account_Number;
+		ADMIN_SAVE_edit_Destination_Number = ETC_Destination_Number;
 	}
 	else if (_TYPE == 4){
 		SAVE_MENU_NAME = "CANCEL selected";
@@ -65,7 +71,7 @@ void ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _
 
     if (out.is_open())
     {
-        out << _ID << "\t" << _CARD << "\t" << SAVE_MENU_NAME << "\t" << _AMOUNT << "\t" << ETC << "\n";
+        out << _ID << "\t" << _CARD << "\t" << SAVE_MENU_NAME << "\t" << _AMOUNT << "\t" << ADMIN_SAVE_edit_Account_Number << "\t" << ADMIN_SAVE_edit_Destination_Number  << "\n";
     }
 }
 
@@ -193,9 +199,75 @@ void ATM::Start_ATM() {
 	long long ATM::Menu() {
 
 	}
+	/*====================Not Tested==============================*/
 	void ATM::Admin() {
 
+		int ADMIN_MENU_SELECT_NUMBER;
+		int ADMIN_CANCEL_SWITCH;
+		string ADMIN_WHILE_SWICTH;
+		
+		while(1) {
+			if (language == 1){
+				cout << "Enter the Number to Select the menu" << endl;
+				cout << "5. Transaction History" << endl;
+
+				cin >> ADMIN_MENU_SELECT_NUMBER;
+
+				if (ADMIN_MENU_SELECT_NUMBER == 5){
+					string line;
+					ifstream file("TRANSACTION_HISTORY.txt");
+					if (file.is_open()){
+						while (getline(file, line)){
+							cout << line << endl;
+						}
+						file.close();
+						break
+					}
+					else{
+						cout << "Error while openning the File 'TRANSACTION_HISTORY.txt" << endl;
+						cout << "Press any keys to restart the session" << endl;
+						cin >> ADMIN_WHILE_SWICTH;
+					}
+					}
+				else{
+					cout << "Wrong Number" << endl;
+				}
+			}
+
+			if (language == 2){
+				cout << "메뉴의 숫자를 눌러주세요" << endl;
+				cout << " 5. 거래내역" << endl;
+
+				cin >> ADMIN_MENU_SELECT_NUMBER;
+
+				if (ADMIN_MENU_SELECT_NUMBER == 5){
+					string line;
+					ifstream file("TRANSACTION_HISTORY.txt");
+					if (file.is_open()){
+						while (getline(file, line)){
+							cout << line << endl;
+						}
+						file.close();
+						break
+					}
+					else{
+						cout << "Error while openning the File 'TRANSACTION_HISTORY.txt" << endl;
+						cout << "아무 키나 눌러 세션을 재 시작해 주세요" << endl;
+						cin >> ADMIN_WHILE_SWITCH;
+					}
+				else{
+					cout << "틀린 번호입니다" << endl;
+				}
+			}
+			}
+		}
+
+		ADMIN_CANCEL_SWITCH = 0;
+
+		Cancle();
+
 	}
+	/*=============================================================*/
 	void ATM::Deposit() {
 
 	}
@@ -204,6 +276,8 @@ void ATM::Start_ATM() {
 	}
 
 	void ATM::Transfer() {
+		/*===================== Transaction Identifier update============*/
+		++Transaction_Id;
 		/*===================== Set the Source Bank =====================*/
 		Bank* source_bank = Call_Bank_of_account(_account_number);
 		/*===============================================================*/
@@ -344,6 +418,7 @@ void ATM::Start_ATM() {
 			else {
 				cout << pay - cash_transfer_fee << " 원이 " << destination_bank->Call_bank_name() << " " << destination_account_number << " 으로 현금 이체 되었습니다" << endl;
 			}
+			Admin_SAVE_TEXT(Transaction_Id,,3,pay-cash_transfer_fee,_account_number,destination_account_number,pay);
 			return;
 			/*=====================================================================*/
 		}
@@ -403,6 +478,7 @@ void ATM::Start_ATM() {
 						cout << "송금 금액: " << amount_transfer << " 원" << endl;
 						cout << "계좌 이체 수수료: " << account_transfer_fee << " 원" << endl;
 					}
+
 					break;
 				}
 			}
@@ -422,6 +498,7 @@ void ATM::Start_ATM() {
 			}
 			return;
 			/*=====================================================================*/
+			Admin_SAVE_TEXT(Transaction_Id,,3,amount_transfer,_account_number,destination_account_number,0);
 
 		}
 		/*==================================================================================*/
