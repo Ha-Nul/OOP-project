@@ -1,1 +1,0 @@
-Github desktop 사용시 메뉴에서 'Current Branch' 가 반드시 main으로 설정되어 있는지 확인해주세요!
