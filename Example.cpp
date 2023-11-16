@@ -24,7 +24,7 @@ private:
 	const Bank* primary_bank;
 	Bank* bank_list[5];
 	long long bank_list_size = 0;
-	string file_name;
+	//string file_name;
 	long long Menu();
 	void Admin();
 	void Admin_SAVE_TEXT(long long ID, long long CARDNUM, int TYPE, long long AMOUNT, string ETC);
@@ -42,7 +42,7 @@ public:
 	void Add_bank_list(Bank* _bank);
 };
 
-ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _AMOUNT, string ETC){
+void ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _AMOUNT, string ETC){
 	
 	string SAVE_MENU_NAME;
 	
@@ -65,7 +65,7 @@ ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _AMOUN
 
     if (out.is_open())
     {
-        out << _ID << "\t" << _CARD << "\t" << _TYPE << "\t" << _AMOUNT << "\t" << ETC << "\n";
+        out << _ID << "\t" << _CARD << "\t" << SAVE_MENU_NAME << "\t" << _AMOUNT << "\t" << ETC << "\n";
     }
 }
 
