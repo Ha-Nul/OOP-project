@@ -49,6 +49,7 @@ private:
 	Account* account_list[10]; long long account_list_size = 0;
 
 public:
+	Bank();
 	Bank(string _bank_name);
 
 	string Call_bank_name();
@@ -493,6 +494,10 @@ void ATM::Add_bank_list(Bank* _bank){
 /*-------------------------------------Bank region-------------------------------------------------------------------------------*/ 
 
 Bank* bank_list[5]; int bank_list_size = 0; //Global variables
+
+Bank::Bank() {
+	
+}
 
 Bank::Bank(string _bank_name) : bank_name(_bank_name) {
 	bank_list[bank_list_size++] = this;
