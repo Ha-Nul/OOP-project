@@ -42,6 +42,51 @@ public:
 	void Add_bank_list(Bank* _bank);
 };
 
+class Bank {
+private:
+	const string bank_name;
+	ATM* atm_list[5]; long long atm_list_size = 0;
+	Account* account_list[10]; long long account_list_size = 0;
+
+public:
+	Bank();
+	Bank(string _bank_name);
+
+	string Call_bank_name();
+	long long Call_balance(long long _account_num); // Use only after executing Exist account and Confirm_password functions. Use _account_num variable we used in Exist_account
+
+	bool Exist_account(long long _account_num);
+	bool Confirm_password(long long _account_num, long long _input_password);// Use only after executing Exist account function. Use _account_num variable we used in Exist_account
+	void Input_balance(long long _account_num, long long _fund);//we should use at Deposit and Tranfer_in_Bank function
+	bool Output_balance(long long _account_num, long long _fund);//we should use at Withdraw and Tranfer_in_Bank function. retun false when _fund is larger than balance.
+	Account* Find_corresponding_account(long long _account_num);//function name is same as the explanation
+
+	void Add_account_list(Account* _account);//This function is executed by Account constructor.
+	void Add_atm_list(ATM* _atm);//This function is executed by  ATM::Add_bank_list function.
+
+};
+
+class Account {
+private:
+	static long long account_count;
+	const string user_name;
+	const Bank* bank;
+	const long long account_number;
+	const long long password;
+	long long balance; //control only at Constructor, Input_balance and output_balance functions.
+	friend void Bank::Input_balance(long long _account_num, long long _fund); //set freind function. control balance at this function of Bank class
+	friend bool Bank::Output_balance(long long _account_num, long long _fund); //set freind function. control balance at this function of Bank class
+public:
+	Account(string _user_name, Bank* _bank, long long _password, long long _balance);
+	
+	string Call_user_name();
+	const Bank* Call_bank();
+	long long Call_account_number();
+	long long Call_password();
+	long long Call_balance();
+};
+
+
 void ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _AMOUNT, string ETC){
 	
 	string SAVE_MENU_NAME;
@@ -70,11 +115,11 @@ void ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _
 }
 
 ATM::ATM(Bank* _primary_bank, long long  _language_type, long long  _atm_type)
-	: serial_number{ atm_count + 100000 },
-	language_type{ _language_type },
-	atm_type{ _atm_type },
-	admin_card_number{ atm_count + 100000 },
-	primary_bank{ _primary_bank }
+	: serial_number( atm_count + 100000 ),
+	language_type( _language_type ),
+	atm_type( _atm_type ),
+	primary_bank( _primary_bank ),
+	admin_card_number( atm_count + 100000 )
 {
 	atm_count++;
 	_primary_bank->Add_atm_list(this);
@@ -446,29 +491,13 @@ void ATM::Add_bank_list(Bank* _bank){
 
 
 
-/*-------------------------------------Bank region-------------------------------------------------------------------------------*/
-class Bank {
-private:
-	const string bank_name;
-	ATM* atm_list[5]; long long atm_list_size = 0;
-	Account* account_list[10]; long long account_list_size = 0;
+/*-------------------------------------Bank region-------------------------------------------------------------------------------*/ 
 
-public:
-	Bank(string _bank_name);
+Bank* bank_list[5]; int bank_list_size = 0; //Global variables
 
-	string Call_bank_name();
-	long long Call_balance(long long _account_num); // Use only after executing Exist account and Confirm_password functions. Use _account_num variable we used in Exist_account
-
-	bool Exist_account(long long _account_num);
-	bool Confirm_password(long long _account_num, long long _input_password);// Use only after executing Exist account function. Use _account_num variable we used in Exist_account
-	void Input_balance(long long _account_num, long long _fund);//we should use at Deposit and Tranfer_in_Bank function
-	bool Output_balance(long long _account_num, long long _fund);//we should use at Withdraw and Tranfer_in_Bank function. retun false when _fund is larger than balance.
-	Account* Find_corresponding_account(long long _account_num);//function name is same as the explanation
-
-	void Add_account_list(Account* _account);//This function is executed by Account constructor.
-	void Add_atm_list(ATM* _atm);//This function is executed by  ATM::Add_bank_list function.
-
-}; Bank* bank_list[5]; int bank_list_size = 0; //Global variables
+Bank::Bank() {
+	
+}
 
 Bank::Bank(string _bank_name) : bank_name(_bank_name) {
 	bank_list[bank_list_size++] = this;
@@ -529,36 +558,18 @@ void Bank::Add_atm_list(ATM* _atm){
 
 
 /*-------------------------------------Account region-------------------------------------------------------------------------------*/
-class Account {
-private:
-	static long long account_count;
-	const string user_name;
-	const Bank* bank;
-	const long long account_number;
-	const long long password;
-	long long balance; //control only at Constructor, Input_balance and output_balance functions.
-	friend void Bank::Input_balance(long long _account_num, long long _fund); //set freind function. control balance at this function of Bank class
-	friend bool Bank::Output_balance(long long _account_num, long long _fund); //set freind function. control balance at this function of Bank class
-public:
-	Account(string _user_name, Bank* _bank, long long _password, long long _balance);
-	
-	string Call_user_name();
-	const Bank* Call_bank();
-	long long Call_account_number();
-	long long Call_password();
-	long long Call_balance();
-};
+
 
 long long atm_count = 0;
 long long account_count = 0;
 
 
 Account::Account(string _user_name, Bank* _bank, long long _password, long long _balance)
-	: user_name{ _user_name },
-	bank{ _bank },
-	password{ _password },
-	balance{ _balance },
-	account_number{ 100000000000 + account_count }
+	: user_name( _user_name ),
+	bank( _bank ),
+	password( _password ),
+	balance( _balance ),
+	account_number( 100000000000 + account_count )
 {
 	account_count++;
 	_bank->Add_account_list(this);
@@ -596,10 +607,10 @@ int main() {
 		out << "ID" << "\t" << "CARD_NUM" << "\t" << "TYPES" << "\t" << "AMOUNT" << "\t" << "ETC" << "\n";		
 	}
 
-	Bank* HN_bank =new Bank{"HN은행"};
-	Bank* JS_bank = new Bank{"JS은행"};
-	Bank* HG_bank = new Bank{"HG은행"};
-	Bank* SH_bank = new Bank{"SH은행"};
+	Bank* HN_bank =new Bank("HN은행");
+	Bank* JS_bank = new Bank("JS은행");
+	Bank* HG_bank = new Bank("HG은행");
+	Bank* SH_bank = new Bank("SH은행");
 
 	Account* account_1 = new Account("석하늘", HN_bank ,202321012, 1000000);
 	Account* account_2 = new Account("김재석", JS_bank ,202111036, 2000000);
