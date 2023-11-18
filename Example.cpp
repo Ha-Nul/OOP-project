@@ -207,8 +207,14 @@ void ATM::Start_ATM() {
 			}
 		}
 		if (ATM_SESSION_CLOSE_SWITCH == 0) {
-			cout << "Session Will be close. Thanks for visiting." << endl;
-			break;
+			if (language == 1) {
+				cout << "Session Will be close. Thanks for visiting." << endl;
+				break;
+			}
+			else {
+				cout << "이용해주셔서 감사합니다." << endl;
+				break;
+			}
 		}
 	}
 }
@@ -243,7 +249,7 @@ void ATM::Start_ATM() {
 
 		int ADMIN_MENU_SELECT_NUMBER;
 		int ADMIN_CANCEL_SWITCH;
-		string ADMIN_WHILE_SWITCH;
+		int ADMIN_WHILE_SWITCH;
 		
 		while(1) {
 			if (language == 1){
@@ -260,12 +266,12 @@ void ATM::Start_ATM() {
 							cout << line << endl;
 						}
 						file.close();
-						break
+						break;
 					}
 					else{
 						cout << "Error while openning the File 'TRANSACTION_HISTORY.txt" << endl;
 						cout << "Press any keys to restart the session" << endl;
-						cin >> ADMIN_WHILE_SWICTH;
+						cin >> ADMIN_WHILE_SWITCH;
 					}
 					}
 				else{
@@ -299,13 +305,9 @@ void ATM::Start_ATM() {
 					cout << "틀린 번호입니다" << endl;
 				}
 			}
-			}
 		}
-
 		ADMIN_CANCEL_SWITCH = 0;
-
 		Cancle();
-
 	}
 	/*=============================================================*/
 	void ATM::Deposit() {
