@@ -86,8 +86,8 @@ public:
 };
 
 
-long long atm_count = 0;
-long long account_count = 0;
+long long ATM::atm_count = 0;
+long long Account::account_count = 0;
 
 Bank* bank_list[5]; int bank_list_size = 0; //Global variables
 
