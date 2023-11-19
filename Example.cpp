@@ -26,14 +26,14 @@ private:
 	long long Menu();
 	void Admin();
 	void Admin_SAVE_TEXT(long long ID, long long CARDNUM, int TYPE, long long AMOUNT, string ETC);
-	void Deposit();
-	void Withdraw();
-	void Transfer();
-	void Cancle();
+	int Deposit();
+	int Withdraw();
+	int Transfer();
 	bool Allowed_cash(long long cash);
 	bool Allowed_check(long long check);
 	bool Account_Exist(long long account_number);
 	Bank* Call_Bank_of_account(long long account_number);
+	void Cancle_Button();
 
 protected:
 	Bank* connected_bank_list[5]; long long connected_bank_list_size = 0;
@@ -109,7 +109,80 @@ Bank* bank_list[5]; int bank_list_size = 0; //Global variables
 
 /*-------------------------------------ATM region-------------------------------------------------------------------------------*/
 
+ATM::ATM(Bank* _primary_bank, long long  _language_type)
+	: serial_number(atm_count + 100000),
+	language_type(_language_type),
+	primary_bank(_primary_bank),
+	admin_card_number(atm_count + 100000)
+{
+	connected_bank_list[connected_bank_list_size++] = _primary_bank;
+	_primary_bank->Add_atm_list(this);
+	atm_count++;
+	//Error message for preparing code demostration.
+	if ((_language_type != 0) && (_language_type != 1)) {
+		cout << "ERROR::Please input language_type either 0 or 1" << endl;
+	}
+}
 
+void ATM::Start_ATM() {
+	/*=================== Enter the account number ===================*/
+	cout << "Please enter your card(account) number" << endl;
+	cin >> _account_number;
+	/*================================================================*/
+
+	/*==================== Select the Language ====================*/
+	// if ATM is bilingual
+	if (language_type == 1) {
+		cout << "Please select the language" << endl;
+		cout << "1. English" << endl;
+		cout << "2. 한국어" << endl;
+		cin >> language;
+	}
+	// if ATM is unilingual
+	else {
+		language = 1; // Default is English
+	}
+	/*=============================================================*/
+
+	if (_account_number == admin_card_number) {
+		Admin();
+		return;
+	}
+
+	while (1) {
+		try{
+			long long menu_type = Menu();
+
+			/*==Deposit==*/
+			if (menu_type == 1) {
+				if(Deposit() == 0){
+					throw menu_type;
+				}
+				Cancle_Button();//when transaction function's return value is not zero 
+				continue;
+			}
+			/*==Withdrawal==*/
+			else if (menu_type == 2) {
+				if(Withdraw() == 0){
+					throw menu_type;
+				}
+				Cancle_Button();//when transaction function's return value is not zero 
+				continue;
+			}
+			/*==Transfer==*/
+			else if (menu_type == 3) {
+				if(Transfer() == 0){
+					throw menu_type;
+				}
+				Cancle_Button();//when transaction function's return value is not zero 
+				continue;
+			}
+		}
+		catch(int menu_type){
+			Admin_SAVE_TEXT(0 , _account_number, menu_type, 0, "");//Call this function when the transaction is successfullly ended. //Someone is void value <- delete this when this problem is solved.
+		}
+	}
+}
 
 void ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _AMOUNT, string ETC) {
 
@@ -138,20 +211,6 @@ void ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _
 	}
 }
 
-ATM::ATM(Bank* _primary_bank, long long  _language_type)
-	: serial_number(atm_count + 100000),
-	language_type(_language_type),
-	primary_bank(_primary_bank),
-	admin_card_number(atm_count + 100000)
-{
-	connected_bank_list[connected_bank_list_size++] = _primary_bank;
-	_primary_bank->Add_atm_list(this);
-	atm_count++;
-	//Error message for preparing code demostration.
-	if ((_language_type != 0) && (_language_type != 1)) {
-		cout << "ERROR::Please input language_type either 0 or 1" << endl;
-	}
-}
 
 bool ATM::Allowed_cash(long long cash) {
 	bool result = cash % 50000 % 10000 % 5000 % 1000 == 0;
@@ -207,55 +266,6 @@ Bank* ATM::Call_Bank_of_account(long long account_number) {
 	return nullptr;
 }
 
-void ATM::Start_ATM() {
-	/*=================== Enter the account number ===================*/
-	cout << "Please enter your card(account) number" << endl;
-	cin >> _account_number;
-	/*================================================================*/
-
-	/*==================== Select the Language ====================*/
-	// if ATM is bilingual
-	if (language_type == 1) {
-		cout << "Please select the language" << endl;
-		cout << "1. English" << endl;
-		cout << "2. 한국어" << endl;
-		cin >> language;
-	}
-	// if ATM is unilingual
-	else {
-		language = 1; // Default is English
-	}
-	/*=============================================================*/
-
-	if (_account_number == admin_card_number) {
-		Admin();
-		return;
-	}
-
-	while (1) {
-		long long var = Menu();
-
-		// Deposit
-		if (var == 1) {
-			Deposit();
-		}
-
-		// Withdrawal
-		if (var == 2) {
-
-			Withdraw();
-		}
-
-		// Transfer
-		if (var == 3) {
-			Transfer();
-		}
-		// Cancel
-		if (var == 4) {
-			Cancle();
-		}
-	}
-}
 
 long long ATM::Menu() {
 	return 0;
@@ -263,14 +273,14 @@ long long ATM::Menu() {
 void ATM::Admin() {
 	return;
 }
-void ATM::Deposit() {
-	return;
+int ATM::Deposit() {
+	return 0;//when successfully ended
 }
-void ATM::Withdraw() {
-	return;
+int ATM::Withdraw() {
+	return 0;//when successfully ended
 }
 
-void ATM::Transfer() {
+int ATM::Transfer() {
 	/*===================== Set the Source Bank =====================*/
 	Bank* source_bank = Call_Bank_of_account(_account_number);
 	/*===============================================================*/
@@ -411,7 +421,7 @@ void ATM::Transfer() {
 		else {
 			cout << pay - cash_transfer_fee << " 원이 " << destination_bank->Call_bank_name() << " " << destination_account_number << " 으로 현금 이체 되었습니다" << endl;
 		}
-		return;
+		return 0;//when successfully ended
 		/*=====================================================================*/
 	}
 
@@ -487,17 +497,19 @@ void ATM::Transfer() {
 		else {
 			cout << amount_transfer << " 원이 " << source_bank->Call_bank_name() << " " << _account_number << " 에서 " << destination_bank->Call_bank_name() << " " << destination_account_number << " 으로 계좌 이체 되었습니다" << endl;
 		}
-		return;
+		return 0;//when successfully ended
 		/*=====================================================================*/
 
 	}
 	/*==================================================================================*/
+
+	return 0;//when successfully ended
 }
 
-void ATM::Cancle() {
+void ATM::Cancle_Button(){
+	//언어에 따라 cancle이 눌렸음을 알려줌.	
 
 }
-
 
 /*------------------------------MultiBank_ATM region-----------------------------------------------------------------------------*/
 
