@@ -15,16 +15,14 @@ private:
 	static long long atm_count;
 	const long long serial_number;
 	const long long admin_card_number;
-	const long long atm_type; // Single bank ATM = 0, Multi-bank ATM = 1
 	const long long language_type; // Unilingual = 0, Bilingual = 1
 	int language; // English = 1, Korean = 2
 	long long _account_number;
 	long long availabe_cash = 10000000;
 	long long receive_check;
 	const Bank* primary_bank;
-	Bank* bank_list[5];
-	long long bank_list_size = 0;
 	//string file_name;
+
 	long long Menu();
 	void Admin();
 	void Admin_SAVE_TEXT(long long ID, long long CARDNUM, int TYPE, long long AMOUNT, string ETC);
@@ -36,11 +34,27 @@ private:
 	bool Allowed_check(long long check);
 	bool Account_Exist(long long account_number);
 	Bank* Call_Bank_of_account(long long account_number);
+
+protected:
+	Bank* connected_bank_list[5]; long long connected_bank_list_size = 0;
+
 public:
-	ATM(Bank* _primary_bank, long long _language_type, long long _atm_type);
+	ATM(Bank* _primary_bank, long long _language_type );
 	void Start_ATM();
-	void Add_bank_list(Bank* _bank);
 };
+
+class MultiBank_ATM : public ATM{
+private:
+
+public:
+	MultiBank_ATM(Bank* _primary_bank, long long _language_type ) : ATM( _primary_bank, _language_type ){};
+	void Add_connected_bank_list(Bank* _bank);
+};
+class SingleBank_ATM : public ATM{
+public:
+	SingleBank_ATM(Bank* _primary_bank, long long _language_type ) : ATM( _primary_bank, _language_type ){};
+};
+
 
 class Bank {
 private:
@@ -124,21 +138,18 @@ void ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _
 	}
 }
 
-ATM::ATM(Bank* _primary_bank, long long  _language_type, long long  _atm_type)
+ATM::ATM(Bank* _primary_bank, long long  _language_type)
 	: serial_number(atm_count + 100000),
 	language_type(_language_type),
-	atm_type(_atm_type),
 	primary_bank(_primary_bank),
 	admin_card_number(atm_count + 100000)
 {
-	atm_count++;
+	connected_bank_list[connected_bank_list_size++] = _primary_bank;
 	_primary_bank->Add_atm_list(this);
+	atm_count++;
 	//Error message for preparing code demostration.
 	if ((_language_type != 0) && (_language_type != 1)) {
 		cout << "ERROR::Please input language_type either 0 or 1" << endl;
-	}
-	if ((_atm_type != 0) && (_atm_type != 1)) {
-		cout << "ERROR::Please input atm_type either 0 or 1" << endl;
 	}
 }
 
@@ -175,8 +186,9 @@ bool ATM::Allowed_check(long long check) {
 }
 
 bool ATM::Account_Exist(long long account_number) {
-	for (int i = 0; i < bank_list_size; i++) {
-		Bank* bank = bank_list[i];
+	Bank* bank;
+	for (int i = 0; i < connected_bank_list_size; i++) {
+		bank = connected_bank_list[i];
 		if (bank->Exist_account(account_number)) {
 			return true;
 		}
@@ -186,8 +198,8 @@ bool ATM::Account_Exist(long long account_number) {
 
 Bank* ATM::Call_Bank_of_account(long long account_number) {
 	Bank* bank;
-	for (int i = 0; i < bank_list_size; i++) {
-		bank = bank_list[i];
+	for (int i = 0; i < connected_bank_list_size; i++) {
+		bank = connected_bank_list[i];
 		if (bank->Exist_account(account_number)) {
 			return bank;
 		}
@@ -486,19 +498,14 @@ void ATM::Cancle() {
 
 }
 
-void ATM::Add_bank_list(Bank* _bank) {
-	//Error message for preparing code demostration.
-	if ((atm_type == 0) && (bank_list_size >= 1)) {
-		cout << "ERROR:This is SingleBank ATM. Please do not add more Bank. The adding Bank is ignored" << endl;
-		return;
-	}
 
-	bank_list[bank_list_size++] = _bank;
+/*------------------------------MultiBank_ATM region-----------------------------------------------------------------------------*/
+
+
+void MultiBank_ATM::Add_connected_bank_list(Bank* _bank) {
+	connected_bank_list[connected_bank_list_size++] = _bank;
 	_bank->Add_atm_list(this);
 }
-
-
-
 
 
 /*-------------------------------------Bank region-------------------------------------------------------------------------------*/
@@ -626,13 +633,13 @@ int main() {
 	Account* account_5 = new Account("조수호", SH_bank, 202111178, 4000000);
 
 
-	ATM* atm_SingUnil = new ATM(HN_bank, 0, 0);
-	ATM* atm_SingBili = new ATM(JS_bank, 0, 1);
-	ATM* atm_MultUnil = new ATM(HG_bank, 1, 0);
-	ATM* atm_MultBili = new ATM(SH_bank, 1, 1);
+	SingleBank_ATM* atm_SingUnil = new SingleBank_ATM(HN_bank, 0);
+	SingleBank_ATM* atm_SingBili = new SingleBank_ATM(JS_bank, 1);
+	MultiBank_ATM* atm_MultUnil = new MultiBank_ATM(HG_bank, 0);
+	MultiBank_ATM* atm_MultBili = new MultiBank_ATM(SH_bank, 1);
 
-	atm_MultUnil->Add_bank_list(SH_bank);
-	atm_MultBili->Add_bank_list(HG_bank);
+	atm_MultUnil->Add_connected_bank_list(SH_bank);
+	atm_MultBili->Add_connected_bank_list(HG_bank);
 
 
 	//Execute an atm what you want
