@@ -26,14 +26,14 @@ private:
 	long long Menu();
 	void Admin();
 	void Admin_SAVE_TEXT(long long ID, long long CARDNUM, int TYPE, long long AMOUNT, string ETC);
-	int Deposit();
-	int Withdraw();
-	int Transfer();
+	void Deposit();
+	void Withdraw();
+	void Transfer();
 	bool Allowed_cash(long long cash);
 	bool Allowed_check(long long check);
 	bool Account_Exist(long long account_number);
 	Bank* Call_Bank_of_account(long long account_number);
-	void Cancle_Button();
+	void Cancel_Button();
 
 protected:
 	Bank* connected_bank_list[5]; long long connected_bank_list_size = 0;
@@ -150,36 +150,30 @@ void ATM::Start_ATM() {
 	}
 
 	while (1) {
-		try{
+		try{ //when cancel is pushed, the throw instance instancely called.
 			long long menu_type = Menu();
 
 			/*==Deposit==*/
 			if (menu_type == 1) {
-				if(Deposit() == 0){
-					throw menu_type;
-				}
-				Cancle_Button();//when transaction function's return value is not zero 
-				continue;
+				Deposit();
 			}
 			/*==Withdrawal==*/
 			else if (menu_type == 2) {
-				if(Withdraw() == 0){
-					throw menu_type;
-				}
-				Cancle_Button();//when transaction function's return value is not zero 
-				continue;
+				Withdraw();
 			}
 			/*==Transfer==*/
 			else if (menu_type == 3) {
-				if(Transfer() == 0){
-					throw menu_type;
-				}
-				Cancle_Button();//when transaction function's return value is not zero 
-				continue;
+				Transfer();
 			}
+			/*==Cancel==*/
+			else{
+				throw 1;
+			}
+			Admin_SAVE_TEXT(0 , _account_number, menu_type, 0, "");//Someone is void value <- delete this when this problem is solved.
 		}
-		catch(int menu_type){
-			Admin_SAVE_TEXT(0 , _account_number, menu_type, 0, "");//Call this function when the transaction is successfullly ended. //Someone is void value <- delete this when this problem is solved.
+		catch(int _void){
+			Cancel_Button();
+			continue;
 		}
 	}
 }
@@ -273,14 +267,14 @@ long long ATM::Menu() {
 void ATM::Admin() {
 	return;
 }
-int ATM::Deposit() {
-	return 0;//when successfully ended
+void ATM::Deposit() {
+	return ;//when successfully ended
 }
-int ATM::Withdraw() {
-	return 0;//when successfully ended
+void ATM::Withdraw() {
+	return ;//when successfully ended
 }
 
-int ATM::Transfer() {
+void ATM::Transfer() {
 	/*===================== Set the Source Bank =====================*/
 	Bank* source_bank = Call_Bank_of_account(_account_number);
 	/*===============================================================*/
@@ -421,7 +415,7 @@ int ATM::Transfer() {
 		else {
 			cout << pay - cash_transfer_fee << " 원이 " << destination_bank->Call_bank_name() << " " << destination_account_number << " 으로 현금 이체 되었습니다" << endl;
 		}
-		return 0;//when successfully ended
+		return;
 		/*=====================================================================*/
 	}
 
@@ -497,18 +491,22 @@ int ATM::Transfer() {
 		else {
 			cout << amount_transfer << " 원이 " << source_bank->Call_bank_name() << " " << _account_number << " 에서 " << destination_bank->Call_bank_name() << " " << destination_account_number << " 으로 계좌 이체 되었습니다" << endl;
 		}
-		return 0;//when successfully ended
+		return;
 		/*=====================================================================*/
 
 	}
 	/*==================================================================================*/
 
-	return 0;//when successfully ended
+	return;
 }
 
-void ATM::Cancle_Button(){
-	//언어에 따라 cancle이 눌렸음을 알려줌.	
-
+void ATM::Cancel_Button(){
+	if(language == 1){
+		cout << "The cancel button is pressed. Exit this seccion." << endl;
+	}
+	else{
+		cout << "취소 버튼을 눌렀습니다. 진행중인 세션을 종료합니다." << endl;
+	}
 }
 
 /*------------------------------MultiBank_ATM region-----------------------------------------------------------------------------*/
