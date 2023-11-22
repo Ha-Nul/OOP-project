@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -36,7 +37,7 @@ private:
 	void Cancel_Button();
 
 protected:
-	Bank* connected_bank_list[5]; long long connected_bank_list_size = 0;
+	vector<Bank*> connected_bank_list;
 
 public:
 	ATM(Bank* _primary_bank, long long _language_type );
@@ -59,8 +60,8 @@ public:
 class Bank {
 private:
 	const string bank_name;
-	ATM* atm_list[5]; long long atm_list_size = 0;
-	Account* account_list[10]; long long account_list_size = 0;
+	vector<ATM*> atm_list;
+	vector<Account*> account_list;
 
 public:
 	Bank(string _bank_name);
@@ -103,7 +104,7 @@ public:
 long long ATM::atm_count = 0;
 long long Account::account_count = 0;
 
-Bank* bank_list[5]; int bank_list_size = 0; //Global variables
+vector<Bank*> bank_list; //Global variables
 
 
 
@@ -115,7 +116,7 @@ ATM::ATM(Bank* _primary_bank, long long  _language_type)
 	primary_bank(_primary_bank),
 	admin_card_number(atm_count + 100000)
 {
-	connected_bank_list[connected_bank_list_size++] = _primary_bank;
+	connected_bank_list.push_back(_primary_bank);
 	_primary_bank->Add_atm_list(this);
 	atm_count++;
 	//Error message for preparing code demostration.
@@ -240,7 +241,7 @@ bool ATM::Allowed_check(long long check) {
 
 bool ATM::Account_Exist(long long account_number) {
 	Bank* bank;
-	for (int i = 0; i < connected_bank_list_size; i++) {
+	for (int i = 0; i < connected_bank_list.size(); i++) {
 		bank = connected_bank_list[i];
 		if (bank->Exist_account(account_number)) {
 			return true;
@@ -251,7 +252,7 @@ bool ATM::Account_Exist(long long account_number) {
 
 Bank* ATM::Call_Bank_of_account(long long account_number) {
 	Bank* bank;
-	for (int i = 0; i < connected_bank_list_size; i++) {
+	for (int i = 0; i < connected_bank_list.size(); i++) {
 		bank = connected_bank_list[i];
 		if (bank->Exist_account(account_number)) {
 			return bank;
@@ -513,7 +514,7 @@ void ATM::Cancel_Button(){
 
 
 void MultiBank_ATM::Add_connected_bank_list(Bank* _bank) {
-	connected_bank_list[connected_bank_list_size++] = _bank;
+	connected_bank_list.push_back(_bank);
 	_bank->Add_atm_list(this);
 }
 
@@ -522,7 +523,7 @@ void MultiBank_ATM::Add_connected_bank_list(Bank* _bank) {
 
 
 Bank::Bank(string _bank_name) : bank_name(_bank_name) {
-	bank_list[bank_list_size++] = this;
+	bank_list.push_back(this);
 }
 
 
@@ -535,7 +536,7 @@ long long Bank::Call_balance(long long _account_num) {
 
 
 bool Bank::Exist_account(long long _account_num) {
-	for (int i = 0; i < account_list_size; i++) {
+	for (int i = 0; i < account_list.size(); i++) {
 		if (account_list[i]->Call_account_number() == _account_num) {
 			return true;
 		}
@@ -565,7 +566,7 @@ bool Bank::Output_balance(long long _account_num, long long _fund) {
 }
 
 Account* Bank::Find_corresponding_account(long long _account_num) {
-	for (int i = 0; i < account_list_size; i++) {
+	for (int i = 0; i < account_list.size(); i++) {
 		if (account_list[i]->Call_account_number() == _account_num) {//Assume that there must exist corresponding account
 			return account_list[i];
 		}
@@ -575,10 +576,10 @@ Account* Bank::Find_corresponding_account(long long _account_num) {
 
 
 void Bank::Add_account_list(Account* _account) {
-	account_list[account_list_size++] = _account;
+	account_list.push_back(_account);
 }
 void Bank::Add_atm_list(ATM* _atm) {
-	atm_list[atm_list_size++] = _atm;
+	atm_list.push_back(_atm);
 }
 
 
