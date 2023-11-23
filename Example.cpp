@@ -167,7 +167,7 @@ void ATM::Start_ATM() {
 				Transfer();
 			}
 			/*==Cancel==*/
-			else{
+			else if (menu_type < 0){//Cancle is called, when the input parameter is negative.
 				throw 1;
 			}
 			Admin_SAVE_TEXT(0 , _account_number, menu_type, 0, "");//Someone is void value <- delete this when this problem is solved.
@@ -315,6 +315,9 @@ void ATM::Transfer() {
 			}
 			break;
 		}
+		else if (transfer_type < 0){//Cancle is called
+			throw 1;
+		}
 		else {
 			if (language == 1) {
 				cout << "Please enter the number 1 or 2" << endl;
@@ -337,7 +340,10 @@ void ATM::Transfer() {
 			cout << "입금 계좌 번호를 입력해주세요" << endl;
 		}
 		cin >> destination_account_number;
-		if (Account_Exist(destination_account_number)) {
+		if(destination_account_number < 0){//Cancle is called
+			throw 1;
+		}
+		else if (Account_Exist(destination_account_number)) {
 			if (language == 1) {
 				cout << "The destination account number is " << destination_account_number << endl;
 			}
@@ -376,7 +382,10 @@ void ATM::Transfer() {
 				cout << "지불하실 현금의 금액를 입력해주세요" << endl;
 			}
 			cin >> pay;
-			if (Allowed_cash(pay) == false) {
+			if(pay < 0){//Cancle is called
+				throw 1;
+			}
+			else if (Allowed_cash(pay) == false) {
 				continue;
 			}
 			else if (pay <= cash_transfer_fee) {
@@ -457,7 +466,10 @@ void ATM::Transfer() {
 				cout << "송금하실 금액을 입력해주세요" << endl;
 			}
 			cin >> amount_transfer;
-			if (source_bank->Call_balance(_account_number) < amount_transfer + account_transfer_fee) {
+			if (amount_transfer < 0){//Cancle is called
+				throw 1;
+			}
+			else if (source_bank->Call_balance(_account_number) < amount_transfer + account_transfer_fee) {
 				if (language == 1) {
 					cout << "The balance of source account is not sufficient" << endl;
 				}
@@ -503,7 +515,7 @@ void ATM::Transfer() {
 
 void ATM::Cancel_Button(){
 	if(language == 1){
-		cout << "The cancel button is pressed. Exit this seccion." << endl;
+		cout << "The cancel button is pressed. Exit the current session." << endl;
 	}
 	else{
 		cout << "취소 버튼을 눌렀습니다. 진행중인 세션을 종료합니다." << endl;
