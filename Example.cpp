@@ -399,6 +399,9 @@ void ATM::Transfer() {
 					cout << "현금 이체 금액: " << pay << " 원" << endl;
 					cout << "현금 이체 수수료: " << cash_transfer_fee << " 원" << endl;
 				}
+				for (int i; i < 4; i++) {
+					number_of_avialable_cash_list[i] += number_of_cash_list[i];
+				}
 				availabe_cash += pay;
 				break;
 			}
