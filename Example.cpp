@@ -40,6 +40,8 @@ protected:
 public:
 	ATM(Bank* _primary_bank, long long _language_type );
 	void Start_ATM();
+	int Call_language_type();
+	long long Call_serial_number();
 };
 
 class MultiBank_ATM : public ATM{
@@ -176,7 +178,7 @@ void ATM::Start_ATM() {
 				Transfer();
 			}
 			/*==Cancel==*/
-			else if (menu_type < 0){//Cancle is called, when the input parameter is negative.
+			else if (menu_type < 0){//Cancel is called, when the input parameter is negative.
 				throw 1;
 			}
 			Admin_SAVE_TEXT(0 , _account_number, menu_type, 0, 0);//Someone is void value <- delete this when this problem is solved.
@@ -261,7 +263,7 @@ long long ATM::Menu(int LANG) {
 			cout << "1. Deposit" << endl;
 			cout << "2. Withdraw" << endl;
 			cout << "3. Transfer" << endl;
-			cout << "4. Cancel" << endl;
+			cout << "If you want to cancel this session, write -1 " << endl;
 		}
 		else
 		{
@@ -269,7 +271,7 @@ long long ATM::Menu(int LANG) {
 			cout << "1. 입금" << endl;
 			cout << "2. 출금" << endl;
 			cout << "3. 송금" << endl;
-			cout << "4. 취소" << endl;
+			cout << "취소를 원하시면, -1 을 적어주세요" << endl;
 		}
 	cin >> MENU_SELECT_NUMBER;
 	var = MENU_SELECT_NUMBER;
@@ -387,7 +389,7 @@ void ATM::Transfer() {
 			}
 			break;
 		}
-		else if (transfer_type < 0){//Cancle is called
+		else if (transfer_type < 0){//Cancel is called
 			throw 1;
 		}
 		else {
@@ -412,7 +414,7 @@ void ATM::Transfer() {
 			cout << "입금 계좌 번호를 입력해주세요" << endl;
 		}
 		cin >> destination_account_number;
-		if(destination_account_number < 0){//Cancle is called
+		if(destination_account_number < 0){//Cancel is called
 			throw 1;
 		}
 		else if (Account_Exist(destination_account_number)) {
@@ -465,7 +467,7 @@ void ATM::Transfer() {
 			for (int i; i < 4; i++) {
 				pay += cash_list[i] * number_of_cash_list[i];
 			}
-			if(pay < 0){//Cancle is called
+			if(pay < 0){//Cancel is called
 				throw 1;
 			}
 			else if (pay <= cash_transfer_fee) {
@@ -550,7 +552,7 @@ void ATM::Transfer() {
 				cout << "송금하실 금액을 입력해주세요" << endl;
 			}
 			cin >> amount_transfer;
-			if (amount_transfer < 0){//Cancle is called
+			if (amount_transfer < 0){//Cancel is called
 				throw 1;
 			}
 			else if (source_bank->Call_balance(_account_number) < amount_transfer + account_transfer_fee) {
@@ -605,6 +607,14 @@ void ATM::Cancel_Button(){
 		cout << "취소 버튼을 눌렀습니다. 진행중인 세션을 종료합니다." << endl;
 	}
 }
+
+int ATM::Call_language_type(){
+	return language_type;
+}
+long long ATM::Call_serial_number(){
+	return serial_number;
+}
+
 
 /*------------------------------MultiBank_ATM region-----------------------------------------------------------------------------*/
 bool MultiBank_ATM::Avaliable_account(){
@@ -742,9 +752,149 @@ bool Account::operator-(long long amount) {
 
 
 /*-------------------------------------Main region-------------------------------------------------------------------------------*/
+vector<SingleBank_ATM*> SingleBank_ATM_list;
+vector<MultiBank_ATM*> MultiBank_ATM_list;
+
+bool Construct_part(){
+	cout << "=====Start Construct_part=====\n==============================" << endl;
+			 
+	while(1){
+	cout << "===Bank Construct===" << endl;
+		cout << "   Continue this part : 1 \n   End this part : 2" << endl;
+		int var;
+		cin >> var;
+		if(var != 1){
+			break;
+		}
+
+		cout << "Please write new Bank name." << endl;
+		string new_bank_name = "";
+		cin >> new_bank_name;
+		new Bank(new_bank_name);
+	}
+
+	while(1){
+	cout << "===Account Construct===" << endl;
+		cout << "   Continue this part : 1 \n   End this part : 2" << endl;
+		int var;
+		cin >> var;
+		if(var != 1){
+			break;
+		}
+
+		cout << "Please write the user name" << endl;
+		string username;
+		cin >> username;
+
+		cout << "Please write the bank name" << endl;
+		string bankname;
+		cin >> bankname;
+		Bank* corr_bank;
+		for (int i = 0 ; i < bank_list.size() ; i ++ ){
+			if(bank_list[i]->Call_bank_name() == bankname){
+				corr_bank = bank_list[i];
+				break;
+			}
+		}
+
+		cout << "Please write the password which is construced by digit number" << endl;
+		long long password;
+		cin >> password;
+
+		cout << "Please write the initial balance" << endl;
+		long long balance;
+		cin >> balance;
+
+		new Account(username, corr_bank, password, balance);
+	}
+
+	while(1){
+	cout << "===ATM Construct===" << endl;
+		cout << "   Continue this part : 1 \n   End this part : 2" << endl;
+		int var;
+		cin >> var;
+		if(var != 1){
+			break;
+		}
+
+		cout << "Please write the primary bank name" << endl;
+		string primary_bankname;
+		cin >> primary_bankname;
+		Bank* primary_bank;
+		for (int i = 0 ; i < bank_list.size() ; i ++ ){
+			if(bank_list[i]->Call_bank_name() == primary_bankname){
+				primary_bank = bank_list[i];
+				break;
+			}
+		}
+
+
+		cout << "Please select the unilingual Bank or Bilingual Bank\n   Unilingual : 0\n   Bilingual Bank : 1" << endl;
+		int lingual_type;
+		cin >> lingual_type;
+
+		cout << "Please select the SingleBank_ATM or MultiBank_ATM\n   SingleBank_ATM : 0\n   MultiBank_ATM : 1" << endl;
+		int bank_type;
+		cin >> bank_type;
+
+		if(bank_type == 0){
+			SingleBank_ATM_list.push_back(new SingleBank_ATM(primary_bank, lingual_type));
+		}
+		else{
+			MultiBank_ATM_list.push_back(new MultiBank_ATM(primary_bank, lingual_type));
+		}
+	}
+
+	cout << "=====End Construct_part=====\n============================" << endl;
+}
+
+void Excuction_part(){
+	cout << "=====Start Excuction_part=====\n==============================" << endl;
+
+	while(1){
+	cout << "\nSelect the ATM what you want to use." << endl;
+	cout << "   SingleBank_ATM : 1\n   MultiBank_ATM : 2" << endl;
+	int var;
+	cin >> var;
+	if(var == 1){
+		cout << "SingleBank_ATM list. Please select the number" << endl;
+		for (int i = 0 ; i < SingleBank_ATM_list.size() ; i++){
+			cout <<"["<<i+1<<"] SingleBank_ATM : " << ((SingleBank_ATM_list[i]->Call_language_type() == 1)?("Unilingual type , "):("Bilingual type , ")) << "Serial number " << SingleBank_ATM_list[i]->Call_serial_number() << endl;
+		}
+		int foo;
+		cin >> foo;
+		if (foo > SingleBank_ATM_list.size() || foo <= 0){
+			cout << "ERROR:Please write valid number" << endl;
+			continue;
+		}
+		SingleBank_ATM_list[foo-1]->Start_ATM();
+	}
+	else if(var == 2){
+		cout << "MultiBank_ATM list. Please select the number" << endl;
+		for (int i = 0 ; i < MultiBank_ATM_list.size() ; i++){
+			cout <<"["<<i+1<<"] MultiBank_ATM : " << ((MultiBank_ATM_list[i]->Call_language_type() == 1)?("Unilingual type , "):("Bilingual type , ")) << "Serial number " << MultiBank_ATM_list[i]->Call_serial_number() << endl;
+		}
+		int foo;
+		cin >> foo;
+		if (foo > MultiBank_ATM_list.size() || foo <= 0){
+			cout << "ERROR:Please write valid number" << endl;
+			continue;
+		}
+		MultiBank_ATM_list[foo-1]->Start_ATM();
+
+	}
+	else{
+		cout << "ERROR:Please write valid number!" << endl;
+		continue;
+	}
+
+	}
+}
+
 
 int main() {
 
+	/*
 	ofstream out("TRANSACTION_HISTORY.txt");
 	if (out.is_open()) {
 		out << "TRANSACTION_HISTORY" << "\n";
@@ -773,6 +923,11 @@ int main() {
 	while(1){
 		atm_MultBili->Start_ATM();
 	}
+	*/
+
+	Construct_part();
+	Excuction_part();
+	
 
 	return 0;
 }
