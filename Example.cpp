@@ -19,7 +19,8 @@ private:
 	const long long language_type; // Unilingual = 0, Bilingual = 1
 	int language; // English = 1, Korean = 2
 	long long _account_number;
-	long long availabe_cash = 10000000;
+	long long number_of_avialable_cash_list[4] = { 100, 100, 100, 100 }; // {number_of_cash1000, number_of_cash5000, number_of_cash10000, number_of_cash50000}
+	long long availabe_cash = number_of_avialable_cash_list[0] * 1000 + number_of_avialable_cash_list[1] * 5000 + number_of_avialable_cash_list[2] * 10000 + number_of_avialable_cash_list[3] * 50000;
 	long long receive_check;
 	const Bank* primary_bank;
 	//string file_name;
@@ -30,7 +31,6 @@ private:
 	void Deposit();
 	void Withdraw();
 	void Transfer();
-	bool Allowed_cash(long long cash);
 	bool Allowed_check(long long check);
 	bool Account_Exist(long long account_number);
 	Bank* Call_Bank_of_account(long long account_number);
@@ -71,7 +71,7 @@ public:
 
 	bool Exist_account(long long _account_num);
 	bool Confirm_password(long long _account_num, long long _input_password);// Use only after executing Exist account function. Use _account_num variable we used in Exist_account
-	void Input_balance(long long _account_num, long long _fund);//we should use at Deposit and Tranfer_in_Bank function
+	bool Input_balance(long long _account_num, long long _fund);//we should use at Deposit and Tranfer_in_Bank function
 	bool Output_balance(long long _account_num, long long _fund);//we should use at Withdraw and Tranfer_in_Bank function. retun false when _fund is larger than balance.
 	Account* Find_corresponding_account(long long _account_num);//function name is same as the explanation
 
@@ -88,7 +88,7 @@ private:
 	const long long account_number;
 	const long long password;
 	long long balance; //control only at Constructor, Input_balance and output_balance functions.
-	friend void Bank::Input_balance(long long _account_num, long long _fund); //set freind function. control balance at this function of Bank class
+	friend bool Bank::Input_balance(long long _account_num, long long _fund); //set freind function. control balance at this function of Bank class
 	friend bool Bank::Output_balance(long long _account_num, long long _fund); //set freind function. control balance at this function of Bank class
 public:
 	Account(string _user_name, Bank* _bank, long long _password, long long _balance);
@@ -98,6 +98,8 @@ public:
 	long long Call_account_number();
 	long long Call_password();
 	long long Call_balance();
+	bool operator+(long long amount);
+	bool operator-(long long amount);
 };
 
 
@@ -109,7 +111,6 @@ vector<Bank*> bank_list; //Global variables
 
 
 /*-------------------------------------ATM region-------------------------------------------------------------------------------*/
-
 ATM::ATM(Bank* _primary_bank, long long  _language_type)
 	: serial_number(atm_count + 100000),
 	language_type(_language_type),
@@ -204,24 +205,6 @@ void ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _
 	{
 		out << _ID << "\t" << _CARD << "\t" << SAVE_MENU_NAME << "\t" << _AMOUNT << "\t" << ETC << "\n";
 	}
-}
-
-
-bool ATM::Allowed_cash(long long cash) {
-	bool result = cash % 50000 % 10000 % 5000 % 1000 == 0;
-	if (result == false) {
-		if (language == 1) {
-			cout << "The amount of cash is not allowed" << endl;
-			cout << "Only the following types of cashes are allowed" << endl;
-			cout << "KRW 1000, KRW 5000, KRW 10000, KRW 50000" << endl;
-		}
-		else {
-			cout << "허용되지 않은 현금의 금액입니다" << endl;
-			cout << "오직 다음과 같은 현금 종류만 허용됩니다" << endl;
-			cout << "1000 원, 5000 원, 10000 원, 50000 원" << endl;
-		}
-	}
-	return result;
 }
 
 bool ATM::Allowed_check(long long check) {
@@ -370,23 +353,31 @@ void ATM::Transfer() {
 	if (transfer_type == 1) {
 
 		/*=================== Recieve Cash Transfer Payment ===================*/
-		long long pay;
+		long long number_of_cash_list[4]; // {number_of_cash_1000, number_of_cash_5000, number_of_cash_10000, number_of_cash_50000}
+		int cash_list[4] = { 1000, 5000, 10000, 50000 };
+		long long pay = 0;
 		long long cash_transfer_fee = 5000;
 		while (1) {
 			if (language == 1) {
 				cout << "Please pay the amount that you want to cash transfer plus cash transfer fee KRW " << cash_transfer_fee << endl;
-				cout << "Please enter the amount of cash that you want to pay" << endl;
 			}
 			else {
 				cout << "현금 이체하실 금액에 현금 이체 수수료 " << cash_transfer_fee << " 원을 더하여 지불해주세요" << endl;
-				cout << "지불하실 현금의 금액를 입력해주세요" << endl;
 			}
-			cin >> pay;
+			for (int i; i < 4; i++) {
+				if (language == 1) {
+					cout << "Please enter the number of KRW " << cash_list[i] << " to be paid" << endl;
+				}
+				else {
+					cout << "지불하실" << cash_list[i] << "원의 개수를 입력해주세요" << endl;
+				}
+				cin >> number_of_cash_list[i];
+			}
+			for (int i; i < 4; i++) {
+				pay += cash_list[i] * number_of_cash_list[i];
+			}
 			if(pay < 0){//Cancle is called
 				throw 1;
-			}
-			else if (Allowed_cash(pay) == false) {
-				continue;
 			}
 			else if (pay <= cash_transfer_fee) {
 				if (language == 1) {
@@ -563,18 +554,11 @@ bool Bank::Confirm_password(long long _account_num, long long _input_password) {
 		return false;
 	}
 }
-void Bank::Input_balance(long long _account_num, long long _fund) {
-	Find_corresponding_account(_account_num)->balance += _fund;
+bool Bank::Input_balance(long long _account_num, long long _fund) {
+	return Find_corresponding_account(_account_num) + _fund;
 }
 bool Bank::Output_balance(long long _account_num, long long _fund) {
-	Account* curr_acc = Find_corresponding_account(_account_num);
-	if (curr_acc->Call_balance() < _fund) {
-		return false;
-	}
-	else {
-		curr_acc->balance -= _fund;
-		return true;
-	}
+	return Find_corresponding_account(_account_num) - _fund;
 }
 
 Account* Bank::Find_corresponding_account(long long _account_num) {
@@ -627,7 +611,20 @@ long long Account::Call_password() {
 long long Account::Call_balance() {
 	return balance;
 }
-
+bool Account::operator+(long long amount) {
+	this->balance += amount;
+	return true;
+}
+bool Account::operator-(long long amount) {
+	if (this->balance < amount) {
+		return false;
+	}
+	else {
+		this->balance -= amount;
+		return true;
+	}
+	
+}
 
 
 
