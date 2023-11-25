@@ -19,10 +19,11 @@ private:
 	const long long language_type; // Unilingual = 0, Bilingual = 1
 	int language; // English = 1, Korean = 2
 	long long _account_number;
-	long long number_of_avialable_cash_list[4] = { 100, 100, 100, 100 }; // {number_of_cash1000, number_of_cash5000, number_of_cash10000, number_of_cash50000}
-	long long availabe_cash = number_of_avialable_cash_list[0] * 1000 + number_of_avialable_cash_list[1] * 5000 + number_of_avialable_cash_list[2] * 10000 + number_of_avialable_cash_list[3] * 50000;
-	long long receive_check;
+	long long number_of_available_cash_list[4] = { 100, 100, 100, 100 }; // {number_of_cash1000, number_of_cash5000, number_of_cash10000, number_of_cash50000}
+	long long availabe_cash = number_of_available_cash_list[0] * 1000 + number_of_available_cash_list[1] * 5000 + number_of_available_cash_list[2] * 10000 + number_of_available_cash_list[3] * 50000; // atm에 있는 현금 총액
+	vector<long long> receive_check_list;
 	const Bank* primary_bank;
+	const int cash_list[4] = { 1000, 5000, 10000, 50000 };
 	//string file_name;
 
 	long long Menu();
@@ -251,10 +252,275 @@ long long ATM::Menu() {
 void ATM::Admin() {
 	return;
 }
+
+
 void ATM::Deposit() {
-	return ;//when successfully ended
+	/*Set the Source Bank*/
+	Bank* source_bank = Call_Bank_of_account(_account_number);
+
+	int deposit_type;// Cash or Check?
+	while (1) {
+		if (language == 1) {
+			cout << "Please select the type of deposit" << endl;
+			cout << "1. Cash deposit" << endl;
+			cout << "2. Check deposit" << endl;
+		}
+		else {
+			cout << "입금하는 화폐의 종류를 택하여 주세요" << endl;
+			cout << "1. 지폐 예금" << endl;
+			cout << "2. 수표 예금" << endl;
+		}
+		cin >> deposit_type;
+		if (deposit_type == 1) {
+			if (language == 1) {
+				cout << "Cash deposit is selected" << endl;
+			}
+			else {
+				cout << "지폐 입금이 선택되었습니다" << endl;
+			}
+			break;
+		}
+		else if (deposit_type == 2) {
+			if (language == 1) {
+				cout << "Check deposit is selected" << endl;
+			}
+			else {
+				cout << "수표 입금이 선택되었습니다" << endl;
+			}
+			break;
+		}
+		else {
+			if (language == 1) {
+				cout << "Please enter the number 1 or 2" << endl;
+			}
+			else {
+				cout << "숫자 1 또는 2를 입력해주세요" << endl;
+			}
+			continue;
+		}
+	}
+
+
+	Bank* destination_bank = source_bank;
+
+
+	// Regradless of monry type, fee is same. For non-primary, fee is paid additonally.
+	long long account_deposit_fee;
+	if (source_bank == primary_bank) {
+		account_deposit_fee == 0;
+	}
+	else {
+		account_deposit_fee == 1000;
+	}
+
+
+	if (deposit_type == 1) {
+
+		/*=================== Recieve Cash Deposit Payment ===================*/
+		long long pay;
+		long long number_of_cash_list[4];
+		while (1) {
+			if (language == 1) {
+				cout << "Please pay the amount that you want to cash deposit including deposit fee KRW " << account_deposit_fee << endl;
+			}
+			else {
+				cout << "현금 입금하실 금액에 입금 수수료 " << account_deposit_fee << " 원을 더하여 지불해주세요" << endl;	
+			}
+			
+			for (int i; i < 4; i++) {
+				if (language == 1) {
+					cout << "Please enter the number of KRW " << cash_list[i] << " to be paid" << endl;
+				}
+				else {
+					cout << "지불하실" << cash_list[i] << "원의 개수를 입력해주세요" << endl;
+				}
+				cin >> number_of_cash_list[i];
+				if (number_of_cash_list[i] < 0) {//Cancle is called
+					throw 1;
+				}
+			}
+			long long sum = 0;
+			for (int i; i < 4; i++) {
+				sum += number_of_cash_list[i];
+			}
+			if (sum > 50) {
+				if (language == 1) {
+					cout << "The total number of paper cash exceeded 50" << endl;
+				}
+				else {
+					cout << "총 지폐의 개수가 50장을 초과하였습니다" << endl;
+				}
+				continue;
+			}
+
+			for (int i; i < 4; i++) {
+				pay += cash_list[i] * number_of_cash_list[i];
+			}
+			
+			
+			
+			if (pay <= account_deposit_fee) {
+				if (language == 1) {
+					cout << "Your payment is less than or equal to the deposit fee" << endl;
+				}
+				else {
+					cout << "지불하신 금액이 입금 수수료보다 작거나 같습니다" << endl;
+				}
+				continue;
+			}
+			else {
+				if (language == 1) {
+					cout << "The total amount that you paid is KRW " << pay << endl;
+					cout << "The amount of deposit: KRW " << pay - account_deposit_fee << endl;
+					cout << "Deposit fee: KRW " << account_deposit_fee << endl;
+				}
+				else {
+					cout << "지불하신 총 금액은 " << pay << " 원입니다" << endl;
+					cout << "입금 금액: " << pay - account_deposit_fee << " 원" << endl;
+					cout << "입금 수수료: " << account_deposit_fee << " 원" << endl;
+				}
+				availabe_cash += pay;
+				for (int i; i < 4; i++) {
+					number_of_available_cash_list[i] += number_of_cash_list[i]; // update the number of each amount of cash, 1000, 5000 etc.
+				}
+				break;
+			}
+		}
+		destination_bank->Input_balance(destination_account_number, pay - account_deposit_fee);
+
+
+		/*============================ End Session ============================*/
+		if (language == 1) {
+			cout << "The cash of KRW " << pay - account_deposit_fee << " to " << destination_bank->Call_bank_name() << " " << destination_account_number << " is deposited successfully" << endl;
+		}
+		else {
+			cout << pay - account_deposit_fee << " 원이 " << destination_bank->Call_bank_name() << " " << destination_account_number << " 으로 입금 되었습니다" << endl;
+		}
+
+		/*=====================================================================*/
+	}
+
+	if (deposit_type == 2) {
+
+		long long pay;
+		long long sum_amount_of_check = 0;
+		int num_check;
+		while (1) {
+
+			if (language == 1) {
+				cout << "Please pay the amount that you want to check deposit including fee KRW " << account_deposit_fee << endl;
+			}
+			else {
+				cout << "수표 입금하실 금액에 입금 수수료 " << account_deposit_fee << " 원을 더하여 지불해주세요" << endl;
+			}
+
+			if (language == 1) {
+				cout << "Enter the number of checks that you want to depsoit" << endl;
+			}
+			else {
+				cout << "입금할 수표의 개수를 입력해주세요" << endl;
+			}
+			cin >> num_check;
+			if (num_check > 30) {
+				if (language == 1) {
+					cout << "The number of checks exceeded 30" << endl;
+				}
+				else {
+					cout << "총 수표의 개수가 30장을 초과하였습니다" << endl;
+				}
+				continue;
+			}
+			else {
+				break;
+			}
+		}
+
+
+		for (int i; i < num_check; i++) {
+			if (language == 1) {
+				cout << "Please enter the (" << i + 1 << "/" << num_check << ") th amount of check" << endl;
+			}
+			else {
+				cout "(" << i + 1 << "/" << num_check << ") 번째 수표의 금액을 입력해주세요" << endl;
+			}
+
+			long long check_amount;
+			cin >> check_amount;
+			// cancel
+			if (Allowed_check(check_amount) == false) {
+				i--;
+			}
+
+			else {
+				receive_check_list.push_back(check_amount);
+				sum_amount_of_check += check_amount;
+			}
+		}
+
+
+		int fee;
+		while (1) {
+			if (account_deposit_fee == 1000) {
+				if (language == 1) {
+					cout << "Please pay deposit fee with cash KRW 1000" << endl;
+				}
+				else {
+					cout << "입금 수수료 현금 1000 원을 지불해주세요" << endl;
+				}
+				cin >> fee;
+				if (fee != 1000) {
+					if (language == 1) {
+						cout << "The amount of deposit fee is incorrect" << endl;
+					else {
+						cout << "입금 수수료의 금액이 올바르지 않습니다" << endl;
+					}
+					continue;
+					}
+				
+				}
+			}
+			else {
+				break;
+			}
+		}
+			
+		pay = sum_amount_of_check + fee;
+
+			
+		if (language == 1) {
+			cout << "The total amount that you paid is KRW " << pay << endl;
+			cout << "The amount of deposit: KRW " << pay - account_deposit_fee << endl;
+			cout << "Deposit fee: KRW " << account_deposit_fee << endl;			
+		}
+		else {
+			cout << "지불하신 총 금액은 " << pay << " 원입니다" << endl;
+			cout << "입금 금액: " << pay - account_deposit_fee << " 원" << endl;
+			cout << "입금 수수료: " << account_deposit_fee << " 원" << endl;
+		}
+
+
+		number_of_available_cash_list[0] += 1;
+		availabe_cash += 1000;
+
+
+		destination_bank->Input_balance(destination_account_number, pay - account_deposit_fee);
+
+		/*============================ End Session ============================*/
+		if (language == 1) {
+			cout << "The check of KRW " << pay - account_deposit_fee << " to " << destination_bank->Call_bank_name() << " " << destination_account_number << " is deposited successfully" << endl;
+		}
+		else {
+			cout << pay - account_deposit_fee << " 원이 " << destination_bank->Call_bank_name() << " " << destination_account_number << "에 입금 되었습니다" << endl;
+		}
+		/*=====================================================================*/
+	}
 }
+
 void ATM::Withdraw() {
+	// Source bank <-- 카드 bank
+	// 큰 단위부터 쌓아서 bool t/f --> atm에서 available
+	
+
 	return ;//when successfully ended
 }
 
@@ -354,7 +620,6 @@ void ATM::Transfer() {
 
 		/*=================== Recieve Cash Transfer Payment ===================*/
 		long long number_of_cash_list[4]; // {number_of_cash_1000, number_of_cash_5000, number_of_cash_10000, number_of_cash_50000}
-		int cash_list[4] = { 1000, 5000, 10000, 50000 };
 		long long pay = 0;
 		long long cash_transfer_fee = 5000;
 		while (1) {
@@ -372,13 +637,14 @@ void ATM::Transfer() {
 					cout << "지불하실" << cash_list[i] << "원의 개수를 입력해주세요" << endl;
 				}
 				cin >> number_of_cash_list[i];
+				if (number_of_cash_list[i] < 0) {//Cancle is called
+					throw 1;
+				}
 			}
 			for (int i; i < 4; i++) {
 				pay += cash_list[i] * number_of_cash_list[i];
 			}
-			if(pay < 0){//Cancle is called
-				throw 1;
-			}
+			
 			else if (pay <= cash_transfer_fee) {
 				if (language == 1) {
 					cout << "Your payment is less than or equal to the cash transfer fee" << endl;
@@ -400,7 +666,7 @@ void ATM::Transfer() {
 					cout << "현금 이체 수수료: " << cash_transfer_fee << " 원" << endl;
 				}
 				for (int i; i < 4; i++) {
-					number_of_avialable_cash_list[i] += number_of_cash_list[i];
+					number_of_available_cash_list[i] += number_of_cash_list[i];
 				}
 				availabe_cash += pay;
 				break;
