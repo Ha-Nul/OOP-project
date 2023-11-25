@@ -25,9 +25,9 @@ private:
 	const Bank* primary_bank;
 	//string file_name;
 
-	long long Menu();
+	long long Menu(int LANG);
 	void Admin();
-	void Admin_SAVE_TEXT(long long ID, long long CARDNUM, int TYPE, long long AMOUNT, string ETC);
+	void Admin_SAVE_TEXT(long long ID, long long CARDNUM, int TYPE, long long AMOUNT, long long ETC);
 	void Deposit();
 	void Withdraw();
 	void Transfer();
@@ -153,7 +153,7 @@ void ATM::Start_ATM() {
 
 	while (1) {
 		try{ //when cancel is pushed, the throw instance instancely called.
-			long long menu_type = Menu();
+			long long menu_type = Menu(language);
 
 			/*==Deposit==*/
 			if (menu_type == 1) {
@@ -171,7 +171,7 @@ void ATM::Start_ATM() {
 			else if (menu_type < 0){//Cancle is called, when the input parameter is negative.
 				throw 1;
 			}
-			Admin_SAVE_TEXT(0 , _account_number, menu_type, 0, "");//Someone is void value <- delete this when this problem is solved.
+			Admin_SAVE_TEXT(0 , _account_number, menu_type, 0, 0);//Someone is void value <- delete this when this problem is solved.
 		}
 		catch(int _void){
 			Cancel_Button();
@@ -180,7 +180,7 @@ void ATM::Start_ATM() {
 	}
 }
 
-void ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _AMOUNT, string ETC) {
+void ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _AMOUNT, long long ETC) {
 
 	string SAVE_MENU_NAME;
 
@@ -195,7 +195,6 @@ void ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _
 	}
 	else if (_TYPE == 4) {
 		SAVE_MENU_NAME = "CANCEL selected";
-		ETC = "CANCELED";
 	}
 
 	ofstream out("TRANSACTION_HISTORY.txt", ios::app);
@@ -245,10 +244,92 @@ Bank* ATM::Call_Bank_of_account(long long account_number) {
 }
 
 
-long long ATM::Menu() {
-	return 0;
+long long ATM::Menu(int LANG) {
+	int MENU_SELECT_NUMBER;
+	int var;
+
+		if (LANG == 1) {
+			cout << "Enter the Number to Select the menu" << endl;
+			cout << "1. Deposit" << endl;
+			cout << "2. Withdraw" << endl;
+			cout << "3. Transfer" << endl;
+			cout << "4. Cancel" << endl;
+		}
+		else
+		{
+			cout << "이용하실 메뉴의 번호를 눌러주세요" << endl;
+			cout << "1. 입금" << endl;
+			cout << "2. 출금" << endl;
+			cout << "3. 송금" << endl;
+			cout << "4. 취소" << endl;
+		}
+	cin >> MENU_SELECT_NUMBER;
+	var = MENU_SELECT_NUMBER;
+
+	return var;
 }
 void ATM::Admin() {
+	int ADMIN_MENU_SELECT_NUMBER;
+	int ADMIN_CANCEL_SWITCH;
+	int ADMIN_WHILE_SWITCH;
+	
+	while(1) {
+		if (language == 1){
+			cout << "Enter the Number to Select the menu" << endl;
+			cout << "5. Transaction History" << endl;
+
+			cin >> ADMIN_MENU_SELECT_NUMBER;
+
+			if (ADMIN_MENU_SELECT_NUMBER == 5){
+				string line;
+				ifstream file("TRANSACTION_HISTORY.txt");
+				if (file.is_open()){
+					while (getline(file, line)){
+						cout << line << endl;
+					}
+					file.close();
+					break;
+				}
+				else{
+					cout << "Error while openning the File 'TRANSACTION_HISTORY.txt" << endl;
+					cout << "Press any keys to restart the session" << endl;
+					cin >> ADMIN_WHILE_SWITCH;
+				}
+				}
+			else{
+				cout << "Wrong Number" << endl;
+			}
+		}
+
+		if (language == 2){
+			cout << "이용하실 메뉴의 숫자를 눌러주세요" << endl;
+			cout << " 5. 거래내역" << endl;
+
+			cin >> ADMIN_MENU_SELECT_NUMBER;
+
+			if (ADMIN_MENU_SELECT_NUMBER == 5){
+				string line;
+				ifstream file("TRANSACTION_HISTORY.txt");
+				if (file.is_open()){
+					while (getline(file, line)){
+						cout << line << endl;
+					}
+					file.close();
+					break;
+				}
+				else{
+					cout << "Error while openning the File 'TRANSACTION_HISTORY.txt" << endl;
+					cout << "아무 키나 눌러 세션을 재 시작해 주세요" << endl;
+					cin >> ADMIN_WHILE_SWITCH;
+				}
+			}
+			else{
+				cout << "틀린 번호입니다" << endl;
+			}
+		}
+	}
+	ADMIN_CANCEL_SWITCH = 0;
+	
 	return;
 }
 void ATM::Deposit() {
@@ -419,6 +500,7 @@ void ATM::Transfer() {
 		else {
 			cout << pay - cash_transfer_fee << " 원이 " << destination_bank->Call_bank_name() << " " << destination_account_number << " 으로 현금 이체 되었습니다" << endl;
 		}
+        Admin_SAVE_TEXT(0000000,000000,3,pay-cash_transfer_fee,pay); // Temporay setting, for Accounnt_number, card_number.
 		return;
 		/*=====================================================================*/
 	}
@@ -637,8 +719,7 @@ bool Account::operator-(long long amount) {
 
 int main() {
 
-	ofstream out("ADMIN.txt");
-	string s;
+	ofstream out("TRANSACTION_HISTORY.txt");
 	if (out.is_open()) {
 		out << "TRANSACTION_HISTORY" << "\n";
 		out << "ID" << "\t" << "CARD_NUM" << "\t" << "TYPES" << "\t" << "AMOUNT" << "\t" << "ETC" << "\n";
