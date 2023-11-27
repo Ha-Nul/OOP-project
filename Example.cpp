@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -132,10 +133,17 @@ ATM::ATM(Bank* _primary_bank, long long  _language_type)
 }
 
 void ATM::Start_ATM() {
+
     /*=================== Enter the account number ===================*/
     cout << "Please enter your card(account) number" << endl;
     cin >> _account_number;
     /*================================================================*/
+
+	ofstream out("TRANSACTION_HISTORY.txt", ios::trunc | ios::out);
+    if (out.is_open()) {
+       out << "TRANSACTION_HISTORY" << "\n" << "ID" << "\t" << "CARD_NUM" << "\t" << "TYPES" << "\t" << "AMOUNT" << "\t" << "ETC" << "\n";
+    }
+	out.close();
 
     /*==================== Select the Language ====================*/
     // if ATM is bilingual
@@ -151,11 +159,7 @@ void ATM::Start_ATM() {
     }
     /*=============================================================*/
 
-    if (_account_number == admin_card_number) {
-        Admin();
-        return;
-    }
-    else if (Available_account() == false) {//Check that the account number is valid
+    if (Available_account() == false && _account_number != admin_card_number) {//Check that the account number is valid
         if (language_type == 1) {
             cout << "Please write available account number" << endl;
         }
@@ -185,11 +189,14 @@ void ATM::Start_ATM() {
             else if (menu_type == 4) {
                 break;
             }
+			else if (menu_type == 5 && _account_number == admin_card_number) {
+        		Admin();
+    		}
             /*==Cancel==*/
             else if (menu_type < 0) {//Cancel is called, when the input parameter is negative.
                 throw 1;
             }
-            Admin_SAVE_TEXT(0, _account_number, menu_type, 0, 0);//Someone is void value <- delete this when this problem is solved.
+            //Admin_SAVE_TEXT(0, _account_number, menu_type, 0, 0);//Someone is void value <- delete this when this problem is solved.
         }
         catch (int _void) {
             Cancel_Button();
@@ -216,12 +223,12 @@ void ATM::Admin_SAVE_TEXT(long long _ID, long long _CARD, int _TYPE, long long _
     }
 
     ofstream out("TRANSACTION_HISTORY.txt", ios::app);
-    string s;
 
     if (out.is_open())
     {
         out << _ID << "\t" << _CARD << "\t" << SAVE_MENU_NAME << "\t" << _AMOUNT << "\t" << ETC << "\n";
     }
+	out.close();
 }
 
 bool ATM::Allowed_check(long long check) {
@@ -273,7 +280,9 @@ long long ATM::Menu(int LANG) {
         cout << "3. Transfer" << endl;
         cout << "4. Exit" << endl;
         cout << "If you want to cancel this session, write -1 " << endl;
-    }
+		cin >> MENU_SELECT_NUMBER;
+    	var = MENU_SELECT_NUMBER;
+	}
     else
     {
         cout << "이용하실 메뉴의 번호를 눌러주세요" << endl;
@@ -282,9 +291,9 @@ long long ATM::Menu(int LANG) {
         cout << "3. 송금" << endl;
         cout << "4. 종료" << endl;
         cout << "취소를 원하시면, -1 을 적어주세요" << endl;
-    }
-    cin >> MENU_SELECT_NUMBER;
-    var = MENU_SELECT_NUMBER;
+		cin >> MENU_SELECT_NUMBER;
+    	var = MENU_SELECT_NUMBER;
+	}
 
     return var;
 }
@@ -293,28 +302,29 @@ void ATM::Admin() {
     int ADMIN_CANCEL_SWITCH;
     int ADMIN_WHILE_SWITCH;
 
+
     while (1) {
         if (language == 1) {
-            cout << "Enter the Number to Select the menu" << endl;
+            cout << "Entering Administrator menu" << endl;
             cout << "5. Transaction History" << endl;
 
             cin >> ADMIN_MENU_SELECT_NUMBER;
 
             if (ADMIN_MENU_SELECT_NUMBER == 5) {
-                string line;
                 ifstream file("TRANSACTION_HISTORY.txt");
+				stringstream all;
+				all << file.rdbuf();
+				cout << all.str();
                 if (file.is_open()) {
-                    while (getline(file, line)) {
-                        cout << line << endl;
-                    }
-                    file.close();
-                    break;
                 }
                 else {
                     cout << "Error while openning the File 'TRANSACTION_HISTORY.txt" << endl;
                     cout << "Press any keys to restart the session" << endl;
                     cin >> ADMIN_WHILE_SWITCH;
                 }
+				cout << "Press any keys to continue" << endl;
+				cin >> ADMIN_CANCEL_SWITCH;
+				return;
             }
             else {
                 cout << "Wrong Number" << endl;
@@ -322,26 +332,26 @@ void ATM::Admin() {
         }
 
         if (language == 2) {
-            cout << "이용하실 메뉴의 숫자를 눌러주세요" << endl;
+            cout << "관리자 메뉴로 진입합니다" << endl;
             cout << " 5. 거래내역" << endl;
 
             cin >> ADMIN_MENU_SELECT_NUMBER;
 
             if (ADMIN_MENU_SELECT_NUMBER == 5) {
-                string line;
                 ifstream file("TRANSACTION_HISTORY.txt");
+				stringstream all;
+				all << file.rdbuf();
+				cout << all.str();
                 if (file.is_open()) {
-                    while (getline(file, line)) {
-                        cout << line << endl;
-                    }
-                    file.close();
-                    break;
                 }
                 else {
                     cout << "Error while openning the File 'TRANSACTION_HISTORY.txt" << endl;
                     cout << "아무 키나 눌러 세션을 재 시작해 주세요" << endl;
                     cin >> ADMIN_WHILE_SWITCH;
                 }
+				cout << "계속하시려면 아무 키나 눌러주세요" << endl;
+				cin >> ADMIN_CANCEL_SWITCH;
+				return;
             }
             else {
                 cout << "틀린 번호입니다" << endl;
@@ -1342,18 +1352,11 @@ void Excuction_part() {
 
 int main() {
 
-    /*
-    ofstream out("TRANSACTION_HISTORY.txt");
-    if (out.is_open()) {
-       out << "TRANSACTION_HISTORY" << "\n";
-       out << "ID" << "\t" << "CARD_NUM" << "\t" << "TYPES" << "\t" << "AMOUNT" << "\t" << "ETC" << "\n";
-    }
-    */
-
-
     Construct_part();
     Excuction_part();
 
+	ATM* atm;
+	atm->Start_ATM();
 
     return 0;
 }
